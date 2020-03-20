@@ -1,27 +1,23 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-
 module FSMemoize
     ( fsmemoize
     ) where
 
-import Prelude hiding (readFile, writeFile)
-import Data.ByteString (ByteString, readFile, writeFile)
 import System.FilePath (FilePath, (</>))
 import System.Directory (doesFileExist)
 
 fsmemoize
-    :: FilePath
+    :: (Read b, Show b) => FilePath
     -> (a -> FilePath)
-    -> (a -> IO ByteString)
+    -> (a -> IO b)
     -> a
-    -> IO ByteString
+    -> IO b
 fsmemoize datadir keyfun costlyOp args = do
     exists <- doesFileExist path 
     if exists
-    then readFile path
+    then readFile path >>= return . read
     else do
         bs <- costlyOp args
-        writeFile path bs
+        writeFile path $ show bs
         return bs
 
     where
