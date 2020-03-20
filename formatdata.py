@@ -8,7 +8,7 @@ def makePairs(filename):
 
     def parseurl(l):
         nonlocal cur_fname
-        cur_fname = l.split('/')[-1].strip()
+        cur_fname = "/".join(l.split('/')[-2:]).strip()
         then(addtag)
 
     def addtag(l):
@@ -17,7 +17,6 @@ def makePairs(filename):
 
     def pop():
         nonlocal cur_fname, cur_tags
-        print(cur_fname, cur_tags)
         yield (cur_fname, cur_tags)
         cur_fname = None
         cur_tags = []
@@ -36,14 +35,17 @@ def makePairs(filename):
             else:
                 yield from pop()
 
-if __name__ == "__main__":
-    from pprint import pprint
-    import csv
+def printTags(pairs):
+    tags = list(set((t for p in pairs for t in p[1])))
+    tags.sort()
 
+    for t in tags:
+        print(t)
+
+
+def writeCsv(pairs):
     with open('./tags.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
-
-        pairs = list(makePairs('./data/tag_data.txt'))
 
         for pair in pairs:
             print(pair)
@@ -51,8 +53,20 @@ if __name__ == "__main__":
                 raise Exception()
             writer.writerow([pair[0]] + pair[1])
 
-        tags = list(set((t for p in pairs for t in p[1])))
-        tags.sort()
+if __name__ == "__main__":
+    from pprint import pprint
+    import csv
+
+    pairs = list(makePairs('./data/tag_data.txt'))
+    lines = []
+
+    for (filename, tags) in pairs:
+        lines.append(filename)
 
         for t in tags:
-            print(t)
+            lines.append(t)
+
+        lines.append("")
+
+    for line in lines[:-1]:
+        print(line)

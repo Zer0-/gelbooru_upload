@@ -15,9 +15,7 @@ import Text.XML.HXT.Core
     , (>>>)
     , getAttrValue
     , getText
-    , processChildren
     , getChildren
-    , isText
     )
 import Data.Text (unpack, pack)
 import Text.URI (mkURI, URI)

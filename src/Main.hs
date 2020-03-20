@@ -3,7 +3,11 @@
 module Main where
 
 import System.Environment (getArgs)
+import System.FilePath (FilePath, (</>))
+import qualified Data.Map as Map
 import Data.ByteString (ByteString)
+import Data.List (intercalate)
+import Data.List.Split (splitWhen, splitOn)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Base64.URL as BSURL
 import Data.Semigroup (Endo (..))
@@ -11,20 +15,27 @@ import Control.Monad.IO.Class (liftIO)
 import qualified Crypto.Hash.MD5 as MD5
 import Network.HTTP.Client (defaultRequest, CookieJar)
 import Network.HTTP.Types (renderQuery, queryTextToQuery)
+import Network.HTTP.Types.Header (hContentType)
+import Network.HTTP.Client.MultipartFormData (partBS, partFile, addPartHeaders)
 import Network.HTTP.Req
     ( runReq
     , req
+    , Req
     , defaultHttpConfig
     , GET (..)
     , POST (..)
     , NoReqBody (..)
     , ReqBodyUrlEnc (..)
+    , ReqBodyMultipart
+    , reqBodyMultipart
     , FormUrlEncodedParam
     , https
     , bsResponse
     , ignoreResponse
     , responseBody
+    , responseStatusCode
     , responseCookieJar
+    , cookieJar
     , (=:) --query params
     , (/:)
     , Option (Option)
@@ -55,6 +66,11 @@ new_booru_login_params
     =  "page" =: ("login" :: String)
     <> "code" =: ("00" :: String)
 
+new_booru_post_params :: Option 'Https
+new_booru_post_params
+    =  "page" =: ("post" :: String)
+    <> "s" =: ("add" :: String)
+
 getRawPageBody_ :: Url scheme -> Option scheme -> IO ByteString
 getRawPageBody_ url params = runReq defaultHttpConfig $ do
     r <- req
@@ -66,24 +82,30 @@ getRawPageBody_ url params = runReq defaultHttpConfig $ do
 
     liftIO $ return $ responseBody r
 
-getRawPageBody :: String -> Url scheme -> Option scheme -> IO ByteString
+getRawPageBody :: FilePath -> Url scheme -> Option scheme -> IO ByteString
 getRawPageBody datadir url params =
     fsmemoize
         datadir
         (uncurry hashUrl)
         (uncurry getRawPageBody_)
-        (url, params);
+        (url, params)
 
 renderParams :: Option scheme -> ByteString
 renderParams (Option f _) = renderQuery True (queryTextToQuery params)
     where
         params = fst $ appEndo f ([], defaultRequest)
 
-hashUrl :: Url scheme -> Option scheme -> String
-hashUrl url params = BS.unpack $ BSURL.encode $ MD5.hash $ BS.concat
+hash :: ByteString -> String
+hash = BS.unpack . BSURL.encode . MD5.hash
+
+urlToBS :: Url scheme -> Option scheme -> ByteString
+urlToBS url params = BS.concat
     [ BS.pack (show url)
     , renderParams params
     ]
+
+hashUrl :: Url scheme -> Option scheme -> String
+hashUrl url params = hash $ urlToBS url params
 
 
 fetchOldBooruPage :: String -> Int -> IO [ Option 'Https ]
@@ -113,8 +135,6 @@ fetchOldBooruImagePage datadir params = do
     mapM_ (putStrLn . ((++) "  ")) tags
     putStrLn ""
 
--- parse data file
--- leftybooru login?
 login :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
 login url params payload = runReq defaultHttpConfig $
     (req
@@ -133,6 +153,92 @@ mkloginParams username password
     <> "submit" =: ("Log+in" :: String)
 
 
+mkPostParams
+    :: Map.Map FilePath String
+    -> FilePath
+    -> String
+    -> [String]
+    -> Req ReqBodyMultipart
+mkPostParams mime imgdir filename tags = reqBodyMultipart
+    [ addPartHeaders
+        (partFile "upload" filepath)
+        [(hContentType, BS.pack (Map.findWithDefault "" filepath mime))]
+    , partBS "source" ""
+    , partBS "title" ""
+    , partBS "tags" $ BS.pack (intercalate " " [ replaceSpace t | t <- tags])
+    , partBS "rating" "q"
+    , partBS "submit" "Upload"
+    ]
+
+    where
+        replaceSpace " " = "_"
+        replaceSpace x = x
+
+        filepath = imgdir </> filename
+
+
+post_
+    :: Map.Map FilePath String
+    -> Url scheme
+    -> Option scheme
+    -> FilePath
+    -> CookieJar
+    -> String
+    -> [String]
+    -> IO ByteString
+post_ mime url params imgdir cookies filename tags = runReq defaultHttpConfig $ do
+    payload <- mkPostParams mime imgdir filename tags
+
+    r <- req
+        POST
+        url
+        payload
+        bsResponse
+        (params <> cookieJar cookies)
+
+    case responseStatusCode r of
+        200 -> liftIO $ return $ responseBody r
+        _ -> error "Upload failed"
+
+-- insane just make a data definition!
+-- why am i adding to this!!!
+uncurry7 :: (a -> b -> c -> d -> e -> f -> g -> h) -> (a, b, c, d, e, f, g) -> h
+uncurry7 h (a, b, c, d, e, f, g) = h a b c d e f g
+
+hashPostArgs
+    :: c
+    -> Url scheme
+    -> Option scheme
+    -> a
+    -> b
+    -> String
+    -> [String]
+    -> String
+hashPostArgs _ url params _ _ filename tags =
+    hash $ BS.concat
+        [ urlToBS url params
+        , BS.pack filename
+        , BS.pack $ concat tags
+        ]
+
+post
+    :: Map.Map FilePath String
+    -> FilePath
+    -> Url scheme
+    -> Option scheme
+    -> FilePath
+    -> CookieJar
+    -> String
+    -> [String]
+    -> IO ByteString
+post mime datadir url params imgdir cookies filename tags =
+    fsmemoize
+        datadir
+        (uncurry7 hashPostArgs)
+        (uncurry7 post_)
+        (mime, url, params, imgdir, cookies, filename, tags)
+
+
 archiveOldMetadata :: IO ()
 archiveOldMetadata = do
     args <- getArgs
@@ -146,11 +252,29 @@ archiveOldMetadata = do
     where
         idlist = [i * 20 | i <- [0..(10800 `quot` 20)]]
 
+parseFileList :: String -> [(String, [String])]
+parseFileList
+    = (map (\(x:xs) -> (x, xs)))
+    . (splitWhen ((==) ""))
+    . lines
+
+parseMimeFile :: String -> Map.Map FilePath String
+parseMimeFile
+    = Map.fromList
+    . (map (\(filename : mimetype : _) -> (init filename, init mimetype)))
+    . (map (splitOn " "))
+    . (drop 1)
+    . lines
+
 main :: IO ()
 main = do
     args <- getArgs
-    let username = head args
-    let password = head $ drop 1 args
+    let datadir = head args
+    let username = head $ drop 1 args
+    let password = head $ drop 2 args
+    let tags_filename = head $ drop 3 args
+    let pictures_dir = head $ drop 4 args
+    let images_mime_file = head $ drop 5 args
 
     cookies <- login
         new_booru_base_url
@@ -158,3 +282,29 @@ main = do
         (mkloginParams username password)
 
     print cookies
+
+    tagsdata <- readFile tags_filename
+    mime_types <- readFile images_mime_file >>= return . parseMimeFile
+
+    mapM_
+        ( \(filename, tags) -> do
+            putStrLn $ filename ++ " " ++ hashPostArgs
+                    mime_types
+                    new_booru_base_url
+                    new_booru_post_params
+                    pictures_dir
+                    cookies
+                    filename
+                    tags
+
+            post
+                mime_types
+                datadir
+                new_booru_base_url
+                new_booru_post_params
+                pictures_dir
+                cookies
+                filename
+                tags
+        )
+        [head (parseFileList tagsdata)]

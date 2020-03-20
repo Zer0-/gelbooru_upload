@@ -6,7 +6,8 @@ let
   req = pkgs.callPackage ./req.nix {};
 
   f = { mkDerivation, base, stdenv, req, cabal-install,
-        cryptohash-md5, base64-bytestring, hxt, hxt-css
+        cryptohash-md5, base64-bytestring, hxt, hxt-css,
+        split
       }:
       mkDerivation {
         pname = "gelbooru-upload";
@@ -15,7 +16,7 @@ let
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
-          base req cryptohash-md5 base64-bytestring hxt hxt-css
+          base req cryptohash-md5 base64-bytestring hxt hxt-css split
         ];
         testHaskellDepends = [ cabal-install ];
         license = "unknown";
