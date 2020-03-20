@@ -1,5 +1,4 @@
-{ nixpkgs ? import <nixpkgs> {}, compiler ? "default", doBenchmark ? false }:
-
+{ nixpkgs ? import <nixpkgs> {}, compiler ? "default", doBenchmark ? false }: 
 let
 
   inherit (nixpkgs) pkgs;
@@ -7,7 +6,7 @@ let
   req = pkgs.callPackage ./req.nix {};
 
   f = { mkDerivation, base, stdenv, req, cabal-install,
-        cryptohash-md5
+        cryptohash-md5, base64-bytestring, hxt, hxt-css
       }:
       mkDerivation {
         pname = "gelbooru-upload";
@@ -15,7 +14,9 @@ let
         src = ./.;
         isLibrary = false;
         isExecutable = true;
-        executableHaskellDepends = [ base req cryptohash-md5 ];
+        executableHaskellDepends = [
+          base req cryptohash-md5 base64-bytestring hxt hxt-css
+        ];
         testHaskellDepends = [ cabal-install ];
         license = "unknown";
         hydraPlatforms = stdenv.lib.platforms.none;
