@@ -15,8 +15,11 @@ import Control.Monad.IO.Class (liftIO)
 import qualified Crypto.Hash.MD5 as MD5
 import Network.HTTP.Client (defaultRequest, CookieJar)
 import Network.HTTP.Types (renderQuery, queryTextToQuery)
-import Network.HTTP.Types.Header (hContentType)
-import Network.HTTP.Client.MultipartFormData (partBS, partFile, addPartHeaders)
+import Network.HTTP.Client.MultipartFormData
+    ( partBS
+    , partContentType
+    , partFileSource
+    )
 import Network.HTTP.Req
     ( runReq
     , req
@@ -30,6 +33,7 @@ import Network.HTTP.Req
     , reqBodyMultipart
     , FormUrlEncodedParam
     , https
+    , http
     , bsResponse
     , ignoreResponse
     , responseBody
@@ -42,6 +46,8 @@ import Network.HTTP.Req
     , Url
     , Scheme (..)
     )
+import Debug.Trace (trace)
+import Text.XML.HXT.DOM.Util (uncurry3)
 
 import Pageparsers (imageLinks, imagePageFilenameTags)
 import FSMemoize (fsmemoize)
@@ -54,6 +60,9 @@ old_booru_base_url = https "lefty.booru.org" /: "index.php"
 
 new_booru_base_url :: Url 'Https
 new_booru_base_url = https "leftypol.booru.org" /: "index.php"
+
+new_booru_base_url_plaintext :: Url 'Http
+new_booru_base_url_plaintext = http "leftypol.booru.org" /: "index.php"
 
 old_booru_base_params :: Option 'Https
 old_booru_base_params
@@ -135,8 +144,8 @@ fetchOldBooruImagePage datadir params = do
     mapM_ (putStrLn . ((++) "  ")) tags
     putStrLn ""
 
-login :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
-login url params payload = runReq defaultHttpConfig $
+login_ :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
+login_ url params payload = runReq defaultHttpConfig $
     (req
         POST
         url
@@ -146,12 +155,20 @@ login url params payload = runReq defaultHttpConfig $
     )
     >>= liftIO . return . responseCookieJar
 
+login :: FilePath -> Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
+login datadir url params payload =
+    fsmemoize
+        datadir
+        (\(u, option, _) -> hashUrl u option)
+        (uncurry3 login_)
+        (url, params, payload)
+
+
 mkloginParams :: String -> String -> FormUrlEncodedParam
 mkloginParams username password
     =  "user" =: username
     <> "pass" =: password
     <> "submit" =: ("Log+in" :: String)
-
 
 mkPostParams
     :: Map.Map FilePath String
@@ -160,9 +177,20 @@ mkPostParams
     -> [String]
     -> Req ReqBodyMultipart
 mkPostParams mime imgdir filename tags = reqBodyMultipart
-    [ addPartHeaders
-        (partFile "upload" filepath)
-        [(hContentType, BS.pack (Map.findWithDefault "" filepath mime))]
+    [ let
+        upload = "upload"
+        part =
+            partFileSource
+                upload
+                filepath
+        part2 = part
+                { partContentType = Just $
+                    BS.pack $ Map.findWithDefault "" filepath mime
+                }
+        in
+            part2
+            --trace ("Content-Type: " ++ (show $ partContentType part2) ++ "\n" ++ show filepath) part2
+
     , partBS "source" ""
     , partBS "title" ""
     , partBS "tags" $ BS.pack (intercalate " " [ replaceSpace t | t <- tags])
@@ -276,7 +304,10 @@ main = do
     let pictures_dir = head $ drop 4 args
     let images_mime_file = head $ drop 5 args
 
+    putStrLn $ "login cookie jar filename: " ++ hashUrl new_booru_base_url new_booru_login_params
+
     cookies <- login
+        datadir
         new_booru_base_url
         new_booru_login_params
         (mkloginParams username password)
@@ -307,4 +338,5 @@ main = do
                 filename
                 tags
         )
-        [head (parseFileList tagsdata)]
+        (parseFileList tagsdata)
+        --[head (parseFileList tagsdata)]

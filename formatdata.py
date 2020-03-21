@@ -8,7 +8,7 @@ def makePairs(filename):
 
     def parseurl(l):
         nonlocal cur_fname
-        cur_fname = "/".join(l.split('/')[-2:]).strip()
+        cur_fname = "/".join(l.split('/')[-2:]).strip().replace('.jpeg', '.jpg')
         then(addtag)
 
     def addtag(l):

@@ -78,7 +78,7 @@ fail
 password
 tagme
 
-11/fd82dd2cb0295751482f8980e5e5cdfa19dccf36.jpeg
+11/fd82dd2cb0295751482f8980e5e5cdfa19dccf36.jpg
 1926
 capitalism
 competition
@@ -357,7 +357,7 @@ honecker
 prc
 socialism
 
-11/f23749086102b46f5d00ab1162bad16179f71dba.jpeg
+11/f23749086102b46f5d00ab1162bad16179f71dba.jpg
 dprk
 juche
 kim jong un
@@ -1252,7 +1252,7 @@ kim il sung
 meeting
 north korea
 
-11/b61a5987f78993a3ef1c44072301255ec8522e97.jpeg
+11/b61a5987f78993a3ef1c44072301255ec8522e97.jpg
 capitalism
 cccp
 comparison
@@ -3610,7 +3610,7 @@ space
 spaceship
 yuri gagarin
 
-11/8c1f5590f09cbdf204b1a3b977cb7e9f036c36ab.jpeg
+11/8c1f5590f09cbdf204b1a3b977cb7e9f036c36ab.jpg
 blood
 crying
 gun
@@ -5952,7 +5952,7 @@ when
 zimbabwe
 zionism
 
-11/cc914b2bea0d825d2d4ab1f0ba6c40bf41e7d4f8.jpeg
+11/cc914b2bea0d825d2d4ab1f0ba6c40bf41e7d4f8.jpg
 brainlet
 mises
 tagme
@@ -6688,7 +6688,7 @@ map
 russian federation
 ussr
 
-11/62f86c02c131bffb273b8113e2428c815e559979.jpeg
+11/62f86c02c131bffb273b8113e2428c815e559979.jpg
 base superstructure
 dialectics
 economics
@@ -6728,7 +6728,7 @@ sjw
 third world
 un
 
-11/bcaadfa9182d18399c8f0659099c900b80cae5b8.jpeg
+11/bcaadfa9182d18399c8f0659099c900b80cae5b8.jpg
 capitalism
 charity
 porky
@@ -8326,7 +8326,7 @@ communism
 stalin
 wikipedia
 
-10/74ee8da2e276aeb2764e208b764dab5a5fab51f3.jpeg
+10/74ee8da2e276aeb2764e208b764dab5a5fab51f3.jpg
 lenin
 quote
 tagme
@@ -8391,12 +8391,12 @@ virgin vs chad
 weapon
 weapons
 
-10/324776df007466e68efdfc7950085a930c6f72f2.jpeg
+10/324776df007466e68efdfc7950085a930c6f72f2.jpg
 jordan peterson
 tagme
 zizek
 
-10/4f8262a6031b2852fa3ce986d9c3ba76472afc4f.jpeg
+10/4f8262a6031b2852fa3ce986d9c3ba76472afc4f.jpg
 hegel
 jordan peterson
 tagme
@@ -8405,7 +8405,7 @@ tagme
 tagme
 zizek
 
-10/99203bbd3d88d6f33fc1d52d8b473e6d96020f80.jpeg
+10/99203bbd3d88d6f33fc1d52d8b473e6d96020f80.jpg
 jordan peterson
 tagme
 virgin vs chad
@@ -8908,7 +8908,7 @@ idpol
 nationalists
 nazis
 
-10/f9ee6d290cccda34791c73e6320223040071d938.jpeg
+10/f9ee6d290cccda34791c73e6320223040071d938.jpg
 angry
 anime
 catgirl
@@ -9084,7 +9084,7 @@ soviet union
 stalin
 ussr
 
-10/8ea5534aa4ba87a306c0a2ac8f421a3b9d5a40b7.jpeg
+10/8ea5534aa4ba87a306c0a2ac8f421a3b9d5a40b7.jpg
 feminism
 idpol
 intersectionality
@@ -9159,7 +9159,7 @@ socialism
 spam
 tagme
 
-10/55e073096e0c496bce4df2e936bedd3e07af93c2.jpeg
+10/55e073096e0c496bce4df2e936bedd3e07af93c2.jpg
 chiang kai-shek
 china
 flood
@@ -9179,11 +9179,11 @@ marxism
 marxist
 quote
 
-10/1445c33a78400b403af3112500e6516e32893692.jpeg
+10/1445c33a78400b403af3112500e6516e32893692.jpg
 anime
 stalin
 
-10/05d0e7c2483df74a25c3793a38237eca9d0f0fc9.jpeg
+10/05d0e7c2483df74a25c3793a38237eca9d0f0fc9.jpg
 
 10/93acb861895f8481aa7651b1233590ce42734b68.jpg
 spam
@@ -9310,7 +9310,7 @@ screenshot
 state capitalism
 xi jinping
 
-10/73dc102d06a252f11595c6fb3f1ad906124f7638.jpeg
+10/73dc102d06a252f11595c6fb3f1ad906124f7638.jpg
 dotp
 engels
 lenin
@@ -9594,7 +9594,7 @@ hammer and sickle
 superhero
 tagme
 
-10/2393878c6623506e5a0b87d158dadff327784314.jpeg
+10/2393878c6623506e5a0b87d158dadff327784314.jpg
 tagme
 
 10/9c1aee37cf3632ad2a377ea0c426ffecbfc71caa.jpg
@@ -9804,7 +9804,7 @@ tarzan
 uk
 weapon
 
-10/e82e07ce674b873102591a01a6e0f34c9b241a72.jpeg
+10/e82e07ce674b873102591a01a6e0f34c9b241a72.jpg
 1983
 bishop
 grenada
@@ -9837,7 +9837,7 @@ liberation
 maurice bishop
 quote
 
-10/75e0c75f3b6f01a048cacfc619aab2fe21d67833.jpeg
+10/75e0c75f3b6f01a048cacfc619aab2fe21d67833.jpg
 collaboration
 fascism
 germany
@@ -9957,19 +9957,19 @@ usa
 ustase
 yugoslavia
 
-10/74412edbd8815f8d68d44e82b8f611ea36c294ca.jpeg
+10/74412edbd8815f8d68d44e82b8f611ea36c294ca.jpg
 tagme
 yang
 
-10/c722159e92a06a1a71279a35ba826aa018d0feb8.jpeg
+10/c722159e92a06a1a71279a35ba826aa018d0feb8.jpg
 tagme
 yang
 
-10/d925d33bdf8db655bbcb93e4b87817e17bbf4e7f.jpeg
+10/d925d33bdf8db655bbcb93e4b87817e17bbf4e7f.jpg
 tagme
 yang
 
-10/3c1855b37552ad64c7ee6c7c61c11afc724e6e39.jpeg
+10/3c1855b37552ad64c7ee6c7c61c11afc724e6e39.jpg
 tagme
 yang
 
@@ -10095,7 +10095,7 @@ revisionist
 stalin
 stalinism
 
-10/48f2d75af7473c05d6a4dfc80e71661130deb54e.jpeg
+10/48f2d75af7473c05d6a4dfc80e71661130deb54e.jpg
 cccp
 cosplay
 everlasting summer
@@ -10103,7 +10103,7 @@ qt
 ussr
 ussr-tan
 
-10/2b30ebc72fd4a6f2a82d8227ab5e8191b994fc57.jpeg
+10/2b30ebc72fd4a6f2a82d8227ab5e8191b994fc57.jpg
 cccp
 cosplay
 everlasting summer
@@ -10111,7 +10111,7 @@ qt
 ussr
 ussr-tan
 
-10/9b1e6f20396dae3a63f137c08e391ff097294bbd.jpeg
+10/9b1e6f20396dae3a63f137c08e391ff097294bbd.jpg
 cccp
 cosplay
 everlasting summer
@@ -10119,7 +10119,7 @@ qt
 ussr
 ussr-tan
 
-10/1c1922337d58b013ede2033a008b764703659e7c.jpeg
+10/1c1922337d58b013ede2033a008b764703659e7c.jpg
 cccp
 cosplay
 everlasting summer
@@ -10127,7 +10127,7 @@ qt
 ussr
 ussr-tan
 
-10/bad940e749972d8b9bdd52ef36c4e4e23f7cd6a8.jpeg
+10/bad940e749972d8b9bdd52ef36c4e4e23f7cd6a8.jpg
 cccp
 cosplay
 everlasting summer
@@ -10143,7 +10143,7 @@ qt
 ussr
 ussr-tan
 
-10/b6d8bb08236b156a4b0a622b414dee3c00605d27.jpeg
+10/b6d8bb08236b156a4b0a622b414dee3c00605d27.jpg
 cccp
 cosplay
 everlasting summer
@@ -10297,7 +10297,7 @@ when
 10/82a0d9243af8f9192a9fe5d226bfde66cf735be0.png
 tagme
 
-10/29f55d2e022aa8d29c4af0ee3aab1d84522ec271.jpeg
+10/29f55d2e022aa8d29c4af0ee3aab1d84522ec271.jpg
 ben shapiro
 cultural marxism
 facts
@@ -10435,7 +10435,7 @@ rape
 rothbard
 stefan molyneux
 
-10/f94801a93516f71c5f1462d6e9dccec1218909ff.jpeg
+10/f94801a93516f71c5f1462d6e9dccec1218909ff.jpg
 degeneracy
 degenerate
 feminism
@@ -10446,7 +10446,7 @@ quote
 sex
 sjw
 
-10/521b331a98c37f8cd032290075ae339f6c22c741.jpeg
+10/521b331a98c37f8cd032290075ae339f6c22c741.jpg
 blood
 britain
 imperialism
@@ -10751,7 +10751,7 @@ tankie
 template
 ushanka
 
-10/971bb3d9c84d2a5f9a73db7028df34690ac65ddb.jpeg
+10/971bb3d9c84d2a5f9a73db7028df34690ac65ddb.jpg
 anarchism
 anarchist
 ancap
@@ -10772,7 +10772,7 @@ red star
 tankie
 ushanka
 
-10/1ee06511121de6bf9a3f14896ca9cbb9ad19dc50.jpeg
+10/1ee06511121de6bf9a3f14896ca9cbb9ad19dc50.jpg
 anarchism
 anarchist
 ancom
@@ -11721,7 +11721,7 @@ intersectionality
 knife
 traps
 
-10/d4510cbc3d2496fac1d9978908545f20e1eed03d.jpeg
+10/d4510cbc3d2496fac1d9978908545f20e1eed03d.jpg
 map
 tagme
 train
@@ -12062,7 +12062,7 @@ nancy pelosi
 palestine
 tagme
 
-10/1815344f6aee2d363509ec73106f6feb50bfe137.jpeg
+10/1815344f6aee2d363509ec73106f6feb50bfe137.jpg
 china
 dengism
 tagme
@@ -12295,7 +12295,7 @@ weapon
 weapons
 wofl
 
-10/c69dd1de5d4ed65a8e19b9b0341f9e723e9d3e55.jpeg
+10/c69dd1de5d4ed65a8e19b9b0341f9e723e9d3e55.jpg
 communism
 propaganda
 tagme
@@ -12921,7 +12921,7 @@ tagme
 traffic
 trolley
 
-10/48d1c55479e6833cf7675b64fcf88a9034206eec.jpeg
+10/48d1c55479e6833cf7675b64fcf88a9034206eec.jpg
 capitalism
 conspiracy
 feminism
@@ -13212,7 +13212,7 @@ twitter
 10/a22a8b6cbabf03fb2e5037750b2f9070da807707.png
 tagme
 
-10/f88fd56f6872013a1c97855f0fb1ba47567a9463.jpeg
+10/f88fd56f6872013a1c97855f0fb1ba47567a9463.jpg
 china
 dengism
 tagme
@@ -13442,7 +13442,7 @@ pocket pussy
 red star
 sex toy
 
-10/0e17af570c5b8c64c4aac77161cb1db775957c90.jpeg
+10/0e17af570c5b8c64c4aac77161cb1db775957c90.jpg
 chart
 imperialism
 infographic
@@ -14226,7 +14226,7 @@ sjw
 twitter
 unruhe
 
-10/7783fc93ea82ea764e8570fa38504c29d4429458.jpeg
+10/7783fc93ea82ea764e8570fa38504c29d4429458.jpg
 capitalism
 communism
 lenin
@@ -14526,7 +14526,7 @@ venezuela
 tagme
 venezuela
 
-10/f9798ed55f8c01d4fb8f50055bd393f0827dbfe0.jpeg
+10/f9798ed55f8c01d4fb8f50055bd393f0827dbfe0.jpg
 democracy
 imperialism
 tagme
@@ -14946,7 +14946,7 @@ debunk
 get a job
 meme
 
-10/f7a8145aa49a056bdaecedeaa147ac25a66e33e3.jpeg
+10/f7a8145aa49a056bdaecedeaa147ac25a66e33e3.jpg
 statistics
 tagme
 venezuela
@@ -15515,7 +15515,7 @@ tau
 warhammer
 warhammer 40k
 
-10/1e4b9688b70bcfd5015bf43bc7ac264e138bffd5.jpeg
+10/1e4b9688b70bcfd5015bf43bc7ac264e138bffd5.jpg
 africa
 derg
 ethiopia
@@ -15523,7 +15523,7 @@ mengistu
 photo
 socialism
 
-10/ae2f5f2ed59b24ce1331c75bbbb37be6ebb063f1.jpeg
+10/ae2f5f2ed59b24ce1331c75bbbb37be6ebb063f1.jpg
 africa
 derg
 ethiopia
@@ -15622,7 +15622,7 @@ screencap
 screenshot
 tagme
 
-10/0a6162ff7f22839bbdbbf04f429904e50e022460.jpeg
+10/0a6162ff7f22839bbdbbf04f429904e50e022460.jpg
 cambodia
 pol pot
 purge
@@ -15869,7 +15869,7 @@ mine
 photo
 slavery
 
-10/0288bfcd5155405f59cf2a606dea384fb4053aad.jpeg
+10/0288bfcd5155405f59cf2a606dea384fb4053aad.jpg
 irish
 photo
 slavery
@@ -18033,7 +18033,7 @@ infograph
 refugees
 syria
 
-9/0eed5ed3f87951a7e15b49859166090cee949229.jpeg
+9/0eed5ed3f87951a7e15b49859166090cee949229.jpg
 al qaeda
 israel
 syria
@@ -18046,7 +18046,7 @@ infograph
 syria
 tagme
 
-9/fd31d2a1fa82942c86560639bfbc74e4f55fa1f4.jpeg
+9/fd31d2a1fa82942c86560639bfbc74e4f55fa1f4.jpg
 best korea
 dprk
 government
@@ -18381,7 +18381,7 @@ lenin
 porky
 saiyan
 
-9/19f61178a66a909608efda7a6e625cc41bfd1446.jpeg
+9/19f61178a66a909608efda7a6e625cc41bfd1446.jpg
 christian
 christianity
 gagarin
@@ -18779,7 +18779,7 @@ germany
 socialism
 then and now
 
-9/07d8a46c986ddd4e955875ecd203de480382cba7.jpeg
+9/07d8a46c986ddd4e955875ecd203de480382cba7.jpg
 comparison
 ddr
 east germany
@@ -19085,14 +19085,14 @@ robot
 soviet
 ussr
 
-9/1846388d0350dcab83231efc8285795ba0e38c1c.jpeg
+9/1846388d0350dcab83231efc8285795ba0e38c1c.jpg
 capitalism
 car
 exploitation
 lambourghini
 tagme
 
-9/0c832c84f65e323a410d7ff772a4e0dee28464b6.jpeg
+9/0c832c84f65e323a410d7ff772a4e0dee28464b6.jpg
 capitalism
 equality
 liberalism
@@ -19451,7 +19451,7 @@ guns
 propaganda
 tagme
 
-9/051ca63e8c31122dfd3a6e3e4d53c87546683e9a.jpeg
+9/051ca63e8c31122dfd3a6e3e4d53c87546683e9a.jpg
 che guevara
 cigar
 facepalm
@@ -19557,7 +19557,7 @@ food
 tagme
 usa
 
-9/c9acd3b5b9e52ac43348ae7f0b1c154633e75b1d.jpeg
+9/c9acd3b5b9e52ac43348ae7f0b1c154633e75b1d.jpg
 beret
 camera
 che guevara
@@ -19686,7 +19686,7 @@ watch
 weapon
 weapons
 
-9/93de219407c42e0fc8d66d7e0909230822c90994.jpeg
+9/93de219407c42e0fc8d66d7e0909230822c90994.jpg
 christian
 christianity
 foucault
@@ -20011,27 +20011,27 @@ kaede takagaki
 red star
 tagme
 
-9/30b900abd1629eb070cf5e09a928a54cfe7657c6.jpeg
+9/30b900abd1629eb070cf5e09a928a54cfe7657c6.jpg
 flag
 tagme
 tito
 yugoslavia
 
-9/968854ea3c650439534b22a2177e44f4689e8fa7.jpeg
+9/968854ea3c650439534b22a2177e44f4689e8fa7.jpg
 despacito
 partisans
 tagme
 tito
 yugoslavia
 
-9/32ef931dc59aba84e4a6fefe140d743ac8ae96d7.jpeg
+9/32ef931dc59aba84e4a6fefe140d743ac8ae96d7.jpg
 glowing eyes
 lens flare
 tito
 woke
 yugoslavia
 
-9/2be58be35d19a7c62df28f72f4b1b03482391b17.jpeg
+9/2be58be35d19a7c62df28f72f4b1b03482391b17.jpg
 serbia
 slovenia
 tito
@@ -20045,14 +20045,14 @@ tito
 titoism
 yugoslavia
 
-9/0604ecb43a450d5590f7d6b5b947ea3294314f82.jpeg
+9/0604ecb43a450d5590f7d6b5b947ea3294314f82.jpg
 feels
 tito
 where is
 wojak
 yugoslavia
 
-9/a0371d97adce6e9f4779ee5eb7a303d50ce44027.jpeg
+9/a0371d97adce6e9f4779ee5eb7a303d50ce44027.jpg
 chetniks
 shrug
 tito
@@ -20060,14 +20060,14 @@ ustashe
 when
 yugoslavia
 
-9/8d96836ea83338aff4ea0aadb61ff00a97c0154c.jpeg
+9/8d96836ea83338aff4ea0aadb61ff00a97c0154c.jpg
 goli otok
 gulag
 that's where you're wrong kiddo
 tito
 yugoslavia
 
-9/a76c7699f6cb2c6141e36f2df0aa0a2969ac146e.jpeg
+9/a76c7699f6cb2c6141e36f2df0aa0a2969ac146e.jpg
 glowing eyes
 lens flare
 shut the fuck up liberal
@@ -20208,7 +20208,7 @@ screencap
 screenshot
 tagme
 
-9/aa7c5558c7523a4dcc0797b50a2b26a5f54781a9.jpeg
+9/aa7c5558c7523a4dcc0797b50a2b26a5f54781a9.jpg
 france
 mark twain
 quote
@@ -20576,7 +20576,7 @@ radical atom
 rafiq
 revleft
 
-9/f878e0358c755275f43b8f68f2ac6eedfe0cc2d3.jpeg
+9/f878e0358c755275f43b8f68f2ac6eedfe0cc2d3.jpg
 best korea
 dprk
 imperialism
@@ -20741,7 +20741,7 @@ store
 tagme
 ussr
 
-9/98663f68f7d15d3a57264f0271ce80e9127118e9.jpeg
+9/98663f68f7d15d3a57264f0271ce80e9127118e9.jpg
 angry
 anime
 cccp
@@ -20816,7 +20816,7 @@ stalin
 ussr
 wolf
 
-9/7b83c7982e3cdc99b0e823e1e1d9fb983854d61b.jpeg
+9/7b83c7982e3cdc99b0e823e1e1d9fb983854d61b.jpg
 1991
 anime
 belarus
@@ -20926,7 +20926,7 @@ screencap
 screenshot
 weapon
 
-9/6cc3f49e14542e594004c03223423b6b80f1f3c7.jpeg
+9/6cc3f49e14542e594004c03223423b6b80f1f3c7.jpg
 capitalism
 cyrillic
 dunno on the moon
@@ -21131,7 +21131,7 @@ translation request
 ussr
 vladimir vysotsky
 
-9/bf3dccfe85117a9097ec606e7ca0cf8e97fb58b4.jpeg
+9/bf3dccfe85117a9097ec606e7ca0cf8e97fb58b4.jpg
 corn
 economy
 fire
@@ -21666,7 +21666,7 @@ terrorism
 terrorist
 usa
 
-9/34c2edc4d4a38ff134a9abcf935cefe73d733a40.jpeg
+9/34c2edc4d4a38ff134a9abcf935cefe73d733a40.jpg
 anime
 everlasting summer
 game
@@ -21701,7 +21701,7 @@ propaganda
 stalin
 tagme
 
-9/7b602d3dada2aa8cd21536a0a892fd12588a2e8f.jpeg
+9/7b602d3dada2aa8cd21536a0a892fd12588a2e8f.jpg
 cancer
 chart
 germany
@@ -21710,7 +21710,7 @@ infographic
 nazi
 smoking
 
-9/393d933a96979deeab960485da140771801b1cef.jpeg
+9/393d933a96979deeab960485da140771801b1cef.jpg
 chart
 comparison
 germany
@@ -21718,7 +21718,7 @@ nazi
 smoking
 tobacco
 
-9/32c33bdfef6f5db9beb32f733508ea3450b927ea.jpeg
+9/32c33bdfef6f5db9beb32f733508ea3450b927ea.jpg
 chart
 germany
 infograph
@@ -22617,19 +22617,6 @@ swastika
 traitor
 ussr
 
-9/0f04754cdebddac2b8014c184b7b95690cd4f647.jpg
-betrayal
-capitalism
-cccp
-gorbachev
-hitler
-imperialism
-nazi
-porky
-swastika
-traitor
-ussr
-
 9/e52e5fae00e52dcec439f6c8f4ba27b603382090.jpg
 feminism
 hillary clinton
@@ -23153,7 +23140,7 @@ ussr
 ussr-tan
 wink
 
-9/e88f5c70bf4755a4bce30dfb72f70a80e15df99f.jpeg
+9/e88f5c70bf4755a4bce30dfb72f70a80e15df99f.jpg
 anime
 candy
 cccp
@@ -23196,7 +23183,7 @@ soviet
 ussr
 ussr-tan
 
-9/920f6153e690d13e0a5256f085ef4753049a4c36.jpeg
+9/920f6153e690d13e0a5256f085ef4753049a4c36.jpg
 anime
 sickle
 soviet
@@ -24840,7 +24827,7 @@ slavya-chan
 soviet
 tagme
 
-9/d582d8b97955d49fa38dca96997defd931530981.jpeg
+9/d582d8b97955d49fa38dca96997defd931530981.jpg
 comic
 comics
 cum
@@ -25058,7 +25045,7 @@ nazi
 9/f9c56de059ce5940e03b9e3560653df94a41bd1f.png
 anime
 
-9/8f5ebd776840c2381a2c27a8b158e3cd4f7b0b97.jpeg
+9/8f5ebd776840c2381a2c27a8b158e3cd4f7b0b97.jpg
 baudrillard
 tagme
 
@@ -26215,7 +26202,7 @@ tagme
 capitalism
 tagme
 
-9/cbb18fb42b5032383c4fdb5f13bec4e22198e495.jpeg
+9/cbb18fb42b5032383c4fdb5f13bec4e22198e495.jpg
 alcohol
 balloon
 drinks
@@ -26239,7 +26226,7 @@ prc
 superhero
 weapon
 
-9/ad57ae4b9dae1bf022187153349839a2a47bcd6a.jpeg
+9/ad57ae4b9dae1bf022187153349839a2a47bcd6a.jpg
 edit
 game
 luigi
@@ -26259,7 +26246,7 @@ portrait
 super mario
 tagme
 
-9/e2eb3b3495343dcdfa4c389e9eff3e53b4797f24.jpeg
+9/e2eb3b3495343dcdfa4c389e9eff3e53b4797f24.jpg
 edit
 game
 mario
@@ -26268,7 +26255,7 @@ stalin
 super mario
 tagme
 
-9/48810a507fcfdd73f129f7dbc7ca932f885bd45d.jpeg
+9/48810a507fcfdd73f129f7dbc7ca932f885bd45d.jpg
 edit
 game
 mario
@@ -26371,7 +26358,7 @@ hammer and sickle
 red star
 soviet
 
-9/a3f2be787c90c3dd7e9aa16ad12da6317e1b12a0.jpeg
+9/a3f2be787c90c3dd7e9aa16ad12da6317e1b12a0.jpg
 beret
 che guevara
 photo
@@ -26610,7 +26597,7 @@ shovel
 tagme
 tool
 
-9/654610d38320adffb93fcc37bb9c4cbe8cebb67f.jpeg
+9/654610d38320adffb93fcc37bb9c4cbe8cebb67f.jpg
 comic
 gun
 guns
@@ -27619,7 +27606,7 @@ quote
 tagme
 trotsky
 
-8/63809831209a7cf9bb70a6954d51891316a984a1.jpeg
+8/63809831209a7cf9bb70a6954d51891316a984a1.jpg
 boxer
 kremlin
 moscow
@@ -27842,7 +27829,7 @@ paris hilton
 scientist
 serbia
 
-8/39bd026be54373b80d226575ff6f2846c6a3c494.jpeg
+8/39bd026be54373b80d226575ff6f2846c6a3c494.jpg
 celebrity
 communism
 cross
@@ -28206,14 +28193,14 @@ quote
 stalin
 tagme
 
-8/1dcb8ba0a67b646d4ab41514e4d5f43863f8522b.jpeg
+8/1dcb8ba0a67b646d4ab41514e4d5f43863f8522b.jpg
 anarchism
 free territory
 makhno
 nestor makhno
 ukraine
 
-8/c93cc810062abe7dba539351b179b2fe3b5e0cbf.jpeg
+8/c93cc810062abe7dba539351b179b2fe3b5e0cbf.jpg
 anarchism
 makhno
 nestor makhno
@@ -28238,13 +28225,13 @@ nestor makhno
 trotsky
 trotskyism
 
-8/be60e9691d055eb757b8290f94aa6a0b1adf179b.jpeg
+8/be60e9691d055eb757b8290f94aa6a0b1adf179b.jpg
 anarchism
 revisionism
 stalin
 tagme
 
-8/f1a9a981be201f49512f38b96fde59b40e48d1eb.jpeg
+8/f1a9a981be201f49512f38b96fde59b40e48d1eb.jpg
 anarchism
 ancoms
 ankids
@@ -28255,7 +28242,7 @@ nestor makhno
 stalin
 trotsky
 
-8/34367f6e24c2442c59ff65c04d7a3a29c782f8d6.jpeg
+8/34367f6e24c2442c59ff65c04d7a3a29c782f8d6.jpg
 hot take
 idiot
 ml
@@ -28980,7 +28967,7 @@ posadism
 tagme
 trotsky
 
-8/31f4f48b4e00feb5a78a6414c45c944085fe2d83.jpeg
+8/31f4f48b4e00feb5a78a6414c45c944085fe2d83.jpg
 caricature
 split
 tagme
@@ -28988,7 +28975,7 @@ timeline
 trotsky
 trotskyism
 
-8/fbcc636f9fd3178866149bd73aebfc1d452b8ea0.jpeg
+8/fbcc636f9fd3178866149bd73aebfc1d452b8ea0.jpg
 caricature
 macbeth
 play
@@ -29218,7 +29205,7 @@ soviet
 tank
 weapon
 
-8/b67b096888c96dfda66d003c99d2fd84e2dc7d39.jpeg
+8/b67b096888c96dfda66d003c99d2fd84e2dc7d39.jpg
 anime
 cannon
 command and conquer
@@ -29496,7 +29483,7 @@ ushanka
 weapon
 weapons
 
-8/e098e8dafeeb7ef553f5d924903aa0a5ecd99112.jpeg
+8/e098e8dafeeb7ef553f5d924903aa0a5ecd99112.jpg
 anime
 crab
 daiteikoku
@@ -29816,7 +29803,7 @@ watch
 weapon
 weapons
 
-8/c3da92888444638b85be547b70e1aafc9106742a.jpeg
+8/c3da92888444638b85be547b70e1aafc9106742a.jpg
 fleatrollus (artist)
 hammer and sickle
 lewd
@@ -29997,7 +29984,7 @@ kamov
 soviet
 usa
 
-8/c24c4af6d9e2fed9439f2cf81ca231ced88cdcae.jpeg
+8/c24c4af6d9e2fed9439f2cf81ca231ced88cdcae.jpg
 fleatrollus (artist)
 hammer and sickle
 lewd
@@ -30030,7 +30017,7 @@ tagme
 tank
 ussr
 
-8/06f05d6a16d70302f464acf86321286a6d0bf4b2.jpeg
+8/06f05d6a16d70302f464acf86321286a6d0bf4b2.jpg
 anime
 lewd
 nsfw
@@ -30408,7 +30395,7 @@ porky
 anarchism
 tagme
 
-8/5345f50c8775921af07f7c2ea404cc05ba383269.jpeg
+8/5345f50c8775921af07f7c2ea404cc05ba383269.jpg
 america
 avian
 bald eagle
@@ -31045,7 +31032,7 @@ red star
 squid
 tagme
 
-8/662401b9a75d8d4e6c84d1ce751e1bed14f0d1c8.jpeg
+8/662401b9a75d8d4e6c84d1ce751e1bed14f0d1c8.jpg
 anime
 map
 pipe
@@ -31065,7 +31052,7 @@ tank
 weapon
 ww2
 
-8/43103f152915b28f9903037751fbab975c9ec0e5.jpeg
+8/43103f152915b28f9903037751fbab975c9ec0e5.jpg
 anime
 dragonball
 dragonball z
@@ -31458,7 +31445,7 @@ france
 robespierre
 tagme
 
-8/800849c0ed7a145ad7fef542a23c4631266b9697.jpeg
+8/800849c0ed7a145ad7fef542a23c4631266b9697.jpg
 anime
 gun
 guns
@@ -31484,7 +31471,7 @@ nightgown
 rodina
 ussr
 
-8/951544a815a9b8316a574b3786c1cd6cd186beea.jpeg
+8/951544a815a9b8316a574b3786c1cd6cd186beea.jpg
 comic
 milo
 tagme
@@ -32084,7 +32071,7 @@ superman
 symbol
 ussr
 
-8/087f37d3a78dfe43ab3496a47fa85f703928dfe4.jpeg
+8/087f37d3a78dfe43ab3496a47fa85f703928dfe4.jpg
 cccp
 emblem
 logo
@@ -32172,7 +32159,7 @@ song
 tagme
 weapon
 
-8/9ab300af18ba884983d1088b6c27705ace00ce4d.jpeg
+8/9ab300af18ba884983d1088b6c27705ace00ce4d.jpg
 ak
 caricature
 gun
@@ -32675,7 +32662,7 @@ redpanels
 sjw
 tagme
 
-8/e8295f54c67fe404599eb31a131affdd83a6c1b0.jpeg
+8/e8295f54c67fe404599eb31a131affdd83a6c1b0.jpg
 book
 butler
 idpol
@@ -33120,7 +33107,7 @@ screencap
 screenshot
 tagme
 
-8/e5780b484a222a97f57302dd1ab88e16a4054ead.jpeg
+8/e5780b484a222a97f57302dd1ab88e16a4054ead.jpg
 anarchism
 anarchist
 ancap
@@ -33481,7 +33468,7 @@ iphones
 tagme
 ussr
 
-8/1f64e8e884a31a88f07ecd8be6a9cd631c1de79a.jpeg
+8/1f64e8e884a31a88f07ecd8be6a9cd631c1de79a.jpg
 lenin
 soviet
 tagme
@@ -33912,7 +33899,7 @@ porky
 tagme
 ussr
 
-8/9761ac475813de48e3ff6341898cdb0b3f4abc79.jpeg
+8/9761ac475813de48e3ff6341898cdb0b3f4abc79.jpg
 anime
 earth-chan
 interkosmos
@@ -33983,31 +33970,6 @@ tagme
 jason unruhe
 tagme
 twitter
-
-8/a8b06003abc20cd499be014e642ac711f32de2ea.jpg
-alt-right
-capitalism
-nazi
-tagme
-
-8/1b633089ee65b8cfaf0f17f264bd313e9711f819.jpg
-oppression
-tagme
-
-8/9e01fe8247216ff31cfe20050d11c3d68883e4b5.jpg
-bourgeois
-comic
-manga
-tagme
-
-8/780b220c3425f2734255e7f3ba28eaeaf950e7fe.png
-capitalism
-communism
-holodomor
-india
-liberals
-uk
-ukraine
 
 8/5bbdb6ccb8634c8bcb9c18f14e47fb25c808cf58.png
 /leftpol/
@@ -34652,7 +34614,7 @@ marx
 nazbol
 tagme
 
-8/66e1093aa199869749a82075f31eb35574740087.jpeg
+8/66e1093aa199869749a82075f31eb35574740087.jpg
 armenia
 armenian genocide
 cenk uygur
@@ -35188,7 +35150,7 @@ jews
 political compass
 rich
 
-8/171b0b3384d62964aa72dee445ee7ef668d0413e.jpeg
+8/171b0b3384d62964aa72dee445ee7ef668d0413e.jpg
 anglo
 guardian
 liberals
@@ -35442,7 +35404,7 @@ manga
 my hero academia
 tagme
 
-8/f6502694fca6a9c1a741f3078dcbdfac4aa4aa79.jpeg
+8/f6502694fca6a9c1a741f3078dcbdfac4aa4aa79.jpg
 glowing eyes
 stalin
 tagme
@@ -35455,7 +35417,7 @@ post-left
 tagme
 virgin
 
-8/e9f21bff8b6478feb3b19d204758438aa82ce9f9.jpeg
+8/e9f21bff8b6478feb3b19d204758438aa82ce9f9.jpg
 bush
 george bush
 hillary clinton
@@ -35919,7 +35881,7 @@ libertarian
 police
 tagme
 
-8/21d1fe09d802001831a8e982683d79c260fef66d.jpeg
+8/21d1fe09d802001831a8e982683d79c260fef66d.jpg
 america
 capitalism
 chart
@@ -35958,7 +35920,7 @@ tagme
 nazbol
 tagme
 
-8/6f5546ce37534a2dde4d79c851ab246a2214c6ec.jpeg
+8/6f5546ce37534a2dde4d79c851ab246a2214c6ec.jpg
 bolshevik
 lenin
 tagme
@@ -36448,7 +36410,7 @@ comic
 theodore roosevelt
 usa
 
-8/28293f372c3c0ccba9aaef00b46151659f806ab6.jpeg
+8/28293f372c3c0ccba9aaef00b46151659f806ab6.jpg
 america
 cartoon
 comic
@@ -36569,7 +36531,7 @@ cuba
 gusano
 tagme
 
-7/f6acf2ea070b0cb036296eba28acd3a2c583f935.jpeg
+7/f6acf2ea070b0cb036296eba28acd3a2c583f935.jpg
 bordiga
 stalin
 tagme
@@ -36602,7 +36564,7 @@ marx
 north korea
 quote
 
-7/5282f199d398dc67e3cc4225e92122059bde4114.jpeg
+7/5282f199d398dc67e3cc4225e92122059bde4114.jpg
 capitalism
 feudalism
 gorbachev
@@ -36695,7 +36657,7 @@ tagme
 althusser
 tagme
 
-7/ca8bf59321b3d4c3984fb565ee4aaaaf72a1ec85.jpeg
+7/ca8bf59321b3d4c3984fb565ee4aaaaf72a1ec85.jpg
 alt-right
 nazi
 tagme
@@ -36782,7 +36744,7 @@ propaganda
 spanish civil war
 tagme
 
-7/11dd4da1ea030cb67f9e28e2a7f7624e7dff6d13.jpeg
+7/11dd4da1ea030cb67f9e28e2a7f7624e7dff6d13.jpg
 michael parenti
 police
 quote
@@ -36983,7 +36945,7 @@ socialism
 then and now
 ussr
 
-7/19b69ef17dfc510c462523181ea05f0a70d5f4cd.jpeg
+7/19b69ef17dfc510c462523181ea05f0a70d5f4cd.jpg
 anime
 antifa
 baseball bat
@@ -37540,7 +37502,7 @@ bourgeoisie
 haganai
 mikazuki yozora
 
-7/350e8fcf72c7a6493aa39af72b778ea58c4a5259.jpeg
+7/350e8fcf72c7a6493aa39af72b778ea58c4a5259.jpg
 anarchism
 button choice
 capitalism
@@ -37928,7 +37890,7 @@ pol pot
 vietcong
 vietnam
 
-7/0a7842ba05f8be766222b59f347e7a32220b5964.jpeg
+7/0a7842ba05f8be766222b59f347e7a32220b5964.jpg
 tagme
 
 7/86d3faa5792b39f958a41d9b7925971b6c7274c8.jpg
@@ -37948,7 +37910,7 @@ bakunin
 tagme
 vaporwave
 
-7/5f33138578664ccb457516b46d6693cdb852c8b4.jpeg
+7/5f33138578664ccb457516b46d6693cdb852c8b4.jpg
 chomsky
 tagme
 zizek
@@ -37963,7 +37925,7 @@ society of the spectacle
 stefan molyneux
 theory
 
-7/748148d25f2dd60872bb3957dbb992d4ddc58233.jpeg
+7/748148d25f2dd60872bb3957dbb992d4ddc58233.jpg
 anglo
 muke
 pipe
@@ -38007,7 +37969,7 @@ proud boys
 simpsons
 tagme
 
-7/91154488295fc092237613b79901dccad2acc968.jpeg
+7/91154488295fc092237613b79901dccad2acc968.jpg
 ancap
 capitalism
 capitalist kid
@@ -38523,14 +38485,14 @@ proudhon
 utopian
 utopian socialism
 
-7/64121668d5ba893bae7caaf5cec40486b7e34a3d.jpeg
+7/64121668d5ba893bae7caaf5cec40486b7e34a3d.jpg
 america
 burgerland
 corperate america
 new england
 new england worker’s party
 
-7/49c60ad708488973d36b0e86041520e8ebdd37ed.jpeg
+7/49c60ad708488973d36b0e86041520e8ebdd37ed.jpg
 nazbol
 sir thomas more
 theory
@@ -39178,7 +39140,7 @@ philosophy
 postmodernism
 screencap
 
-7/14eaab456bed4b69621d92ee8b1c8a85c7873d6c.jpeg
+7/14eaab456bed4b69621d92ee8b1c8a85c7873d6c.jpg
 ben garrison
 marx
 tagme
@@ -39451,7 +39413,7 @@ political
 political compass
 tagme
 
-7/2391bc5a035cd0c21d65aae8f5da9320a22f231e.jpeg
+7/2391bc5a035cd0c21d65aae8f5da9320a22f231e.jpg
 america
 axis of evil
 capitalism
@@ -39536,7 +39498,7 @@ socdem
 socialism
 tagme
 
-7/d372cbb1bff07b2d95a63db4e17ed3f1de67d71f.jpeg
+7/d372cbb1bff07b2d95a63db4e17ed3f1de67d71f.jpg
 leftcom
 muke
 tagme
@@ -39992,7 +39954,7 @@ point
 pointing
 tagme
 
-7/87acd7c781b012c0fc5a5788536f690b96a2423c.jpeg
+7/87acd7c781b012c0fc5a5788536f690b96a2423c.jpg
 anarchism
 makhno
 tagme
@@ -40327,7 +40289,7 @@ sceptics
 screencap
 tagme
 
-7/4f9006eeee11284f0fd5f8d2fbdaa8a3319fe6da.jpeg
+7/4f9006eeee11284f0fd5f8d2fbdaa8a3319fe6da.jpg
 /leftypol/
 bat'ko
 getchan
@@ -40631,7 +40593,7 @@ revleft
 kulak
 tagme
 
-7/5f9b26eccec1ba6c122156e758269fa22bd8146c.jpeg
+7/5f9b26eccec1ba6c122156e758269fa22bd8146c.jpg
 ben garrison
 communism
 stalin
@@ -40934,7 +40896,7 @@ anarchism
 kropotkin
 reaction image
 
-7/c13990964fd46263853c3e6534647d16c7a3a985.jpeg
+7/c13990964fd46263853c3e6534647d16c7a3a985.jpg
 /get/
 anime
 rodina
@@ -41090,7 +41052,7 @@ sjw
 capitalism
 tagme
 
-7/e3a00a173bf4499d1664712cdbe78bdf286f72df.jpeg
+7/e3a00a173bf4499d1664712cdbe78bdf286f72df.jpg
 capitalism
 internet
 philosophy
@@ -41273,12 +41235,12 @@ pepe
 tagme
 ussr
 
-7/8494b40240237f0781991f63f8ff53790bacf9a6.jpeg
+7/8494b40240237f0781991f63f8ff53790bacf9a6.jpg
 pepe
 tagme
 ussr
 
-7/9456304af09bc8e528566b14023f15e6329e68cc.jpeg
+7/9456304af09bc8e528566b14023f15e6329e68cc.jpg
 anarchism
 pepe
 tagme
@@ -41344,7 +41306,7 @@ stirner
 universalism
 universalist
 
-7/90ffee65cbd3c4ec8c36efbb0d66697291a6a8e1.jpeg
+7/90ffee65cbd3c4ec8c36efbb0d66697291a6a8e1.jpg
 anarcho-communism
 communism
 liberator
@@ -41452,7 +41414,7 @@ spooks
 stirner
 tagme
 
-7/c63d832d30848aeb1f0509f3fe07d2e61513b6ec.jpeg
+7/c63d832d30848aeb1f0509f3fe07d2e61513b6ec.jpg
 /pol/
 4chan
 tagme
@@ -42691,7 +42653,7 @@ marx
 tagme
 weapon
 
-7/2f0bd553473d18ad123d3788e7f16bf37a2a2dc9.jpeg
+7/2f0bd553473d18ad123d3788e7f16bf37a2a2dc9.jpg
 maoism
 marxism-leninism
 porky
@@ -43161,11 +43123,11 @@ libertarian
 nazbol
 tagme
 
-7/414170837128feb4272e3a4fe8f599542cc78750.jpeg
+7/414170837128feb4272e3a4fe8f599542cc78750.jpg
 stirner
 tagme
 
-7/d8c0792269dca3aa28bdeeb633f4cba4bf7a77af.jpeg
+7/d8c0792269dca3aa28bdeeb633f4cba4bf7a77af.jpg
 anarchism
 anarcho-communism
 cat
@@ -43473,15 +43435,15 @@ nazbol
 stirner
 tagme
 
-6/2bdd78c4805c8a6e722906e60218e50b8a628c45.jpeg
+6/2bdd78c4805c8a6e722906e60218e50b8a628c45.jpg
 bordiga
 tagme
 
-6/a969ddac891ee295993afe763f1bf2223563bc2a.jpeg
+6/a969ddac891ee295993afe763f1bf2223563bc2a.jpg
 bookchin
 tagme
 
-6/16158469adb36207765ea6211ebbe76564e90894.jpeg
+6/16158469adb36207765ea6211ebbe76564e90894.jpg
 posadism
 tagme
 
@@ -43725,12 +43687,12 @@ stalin
 tagme
 ussr
 
-6/34b770aedefa7a8f4c223f6082bc9feb3fecbb24.jpeg
+6/34b770aedefa7a8f4c223f6082bc9feb3fecbb24.jpg
 posadism
 stalin
 tagme
 
-6/488dcd49564807a200828781ebf1bc56efd318cf.jpeg
+6/488dcd49564807a200828781ebf1bc56efd318cf.jpg
 posadism
 tagme
 trotsky
@@ -44161,7 +44123,7 @@ bourgeois
 capitalism
 tagme
 
-6/84f94fdddaf1a0ad426dae01f5301ab6422d829d.jpeg
+6/84f94fdddaf1a0ad426dae01f5301ab6422d829d.jpg
 anarchism
 demon
 malal
@@ -44433,7 +44395,7 @@ hitler
 stalin
 tagme
 
-6/cbabb19fc5a6f6740bfa4f3d8ebb8157c1d9c07c.jpeg
+6/cbabb19fc5a6f6740bfa4f3d8ebb8157c1d9c07c.jpg
 anarchism
 demon
 malal
@@ -44715,7 +44677,7 @@ idpol
 tagme
 zizek
 
-6/88ac43e6792097e48c5dda659ac45e86d3a1d153.jpeg
+6/88ac43e6792097e48c5dda659ac45e86d3a1d153.jpg
 /leftypol/
 /pol/
 average /leftypol/ raid
@@ -44785,7 +44747,7 @@ liberals
 reddit
 tagme
 
-6/54fbe75b8676cb55ea64f656186ef22347acd273.jpeg
+6/54fbe75b8676cb55ea64f656186ef22347acd273.jpg
 lenin
 tagme
 zizek
@@ -44883,7 +44845,7 @@ gadsden flag
 nazi
 tagme
 
-6/e88c8b930739246aed1fc85907facde4b4287c6a.jpeg
+6/e88c8b930739246aed1fc85907facde4b4287c6a.jpg
 nazi
 nazi ball
 picardía
@@ -45106,7 +45068,7 @@ nazbol
 soros
 tagme
 
-6/56cf79c47c3c81bbda79daaf539368d0bfebf470.jpeg
+6/56cf79c47c3c81bbda79daaf539368d0bfebf470.jpg
 nazbol
 tagme
 
@@ -45817,7 +45779,7 @@ tagme
 nazbol
 tagme
 
-6/5e480e7bd149b2b584cbd2bb0788d97e3a7ab7a6.jpeg
+6/5e480e7bd149b2b584cbd2bb0788d97e3a7ab7a6.jpg
 nazbol
 tagme
 
@@ -47082,7 +47044,7 @@ caesar
 nazbol
 tagme
 
-6/6e6b023bcdda7a956e7f9aaa13723e113a801851.jpeg
+6/6e6b023bcdda7a956e7f9aaa13723e113a801851.jpg
 alunya
 nazbol
 tagme
@@ -47282,7 +47244,7 @@ tagme
 alt-right
 tagme
 
-6/c88d26ca235a14633b818e79243bf31f2297b6d5.jpeg
+6/c88d26ca235a14633b818e79243bf31f2297b6d5.jpg
 alt-right
 antifa
 tagme
@@ -47548,7 +47510,7 @@ post-left
 tagme
 tiqqun
 
-6/8d280cdecf172db5c3fe1e7de5387590c94517cf.jpeg
+6/8d280cdecf172db5c3fe1e7de5387590c94517cf.jpg
 capitalism
 tagme
 
@@ -47580,12 +47542,12 @@ lenin
 protest
 stalin
 
-6/4414a2f9620a8e5a9326d5ff1e8e0d1e8e718db4.jpeg
+6/4414a2f9620a8e5a9326d5ff1e8e0d1e8e718db4.jpg
 protest
 tagme
 trump
 
-6/2297266567d3eb279bc0d12cc6748e481a6a36e7.jpeg
+6/2297266567d3eb279bc0d12cc6748e481a6a36e7.jpg
 protest
 tagme
 trump
@@ -48247,10 +48209,10 @@ usa
 ancap
 tagme
 
-6/3364fce7318032827046dd8fc0c8835de9121faa.jpeg
+6/3364fce7318032827046dd8fc0c8835de9121faa.jpg
 tagme
 
-6/69b2b68b61e696f383d2ecfdf52327d733e1b37b.jpeg
+6/69b2b68b61e696f383d2ecfdf52327d733e1b37b.jpg
 tagme
 
 6/86e95561fb53dd73cee99db954f1d42a37bbf8f6.png
@@ -48363,7 +48325,7 @@ saltiness
 stalin
 tagme
 
-6/1bfafacbabf5e5555562801ed12abee8aeed588b.jpeg
+6/1bfafacbabf5e5555562801ed12abee8aeed588b.jpg
 tagme
 
 6/dfd47ff1735b0b2ce0893f089a90832546621534.jpg
@@ -48499,7 +48461,7 @@ capitalism
 marxism
 tagme
 
-6/7b501c2ed0b75d701fc696742a689f535375fea7.jpeg
+6/7b501c2ed0b75d701fc696742a689f535375fea7.jpg
 bikini
 eye patch
 futa
@@ -48574,7 +48536,7 @@ marx
 marxism
 tagme
 
-6/aaa9ec7f034810162b5d062c82518893bd2e40b0.jpeg
+6/aaa9ec7f034810162b5d062c82518893bd2e40b0.jpg
 adorno
 tagme
 
@@ -48636,7 +48598,7 @@ spooks
 stirner
 tagme
 
-6/029adbe2ef5af02142805834010754976eaa8104.jpeg
+6/029adbe2ef5af02142805834010754976eaa8104.jpg
 tagme
 
 6/01d28346bb1ab501f6e5158c601087164c90bb1b.png
@@ -48804,7 +48766,7 @@ tagme
 tagme
 tankie
 
-6/d42d4fd080a3639588da678e518ac51788b2fa3b.jpeg
+6/d42d4fd080a3639588da678e518ac51788b2fa3b.jpg
 /pol/
 infograph
 tagme
@@ -49032,7 +48994,7 @@ tagme
 lenin
 tagme
 
-6/23f58057b8427e69371030b67083e2a2a2a74deb.jpeg
+6/23f58057b8427e69371030b67083e2a2a2a74deb.jpg
 alt-right
 sjw
 tagme
@@ -49666,7 +49628,7 @@ tagme
 5/92503608aeaa67cc946ea8ec8b1343d318826099.png
 tagme
 
-5/c2da4eccf6c4e6673f9a9becdb046a29d3c77b76.jpeg
+5/c2da4eccf6c4e6673f9a9becdb046a29d3c77b76.jpg
 ancom
 pepe
 tagme
@@ -50025,7 +49987,7 @@ liberals
 tagme
 wyatt mann
 
-5/c4870c6d2d609d3a074ac563a37649d3a010d7b8.jpeg
+5/c4870c6d2d609d3a074ac563a37649d3a010d7b8.jpg
 bernie sanders
 democrats
 liberals
@@ -50197,7 +50159,7 @@ tagme
 marxism
 tagme
 
-5/32a0e7c66a4f58bdf8e2645f673da085b1a1782f.jpeg
+5/32a0e7c66a4f58bdf8e2645f673da085b1a1782f.jpg
 expanding brain
 socialism
 tagme
@@ -50946,7 +50908,7 @@ socialism
 ussr
 vietnam
 
-5/fc654147ea0cf482455d050cfb5d1d8c69ac36e7.jpeg
+5/fc654147ea0cf482455d050cfb5d1d8c69ac36e7.jpg
 ancom
 pepe
 tagme
@@ -51258,7 +51220,7 @@ screencap
 socdem
 tagme
 
-5/02bb165a7105e08531a4ddef43f803e311b7c616.jpeg
+5/02bb165a7105e08531a4ddef43f803e311b7c616.jpg
 ayn rand
 freidman
 libertarian
@@ -52411,7 +52373,7 @@ accelerartionism
 tagme
 zizek
 
-5/0bec728465886f49899bc39567cf9e04cbf2c0c1.jpeg
+5/0bec728465886f49899bc39567cf9e04cbf2c0c1.jpg
 angry
 stirner
 
@@ -52509,7 +52471,7 @@ bee
 memes
 tagme
 
-5/4ce0f409bbcc31cb21c247639ae3b53d29ad2144.jpeg
+5/4ce0f409bbcc31cb21c247639ae3b53d29ad2144.jpg
 black and white
 cultural marxism
 frankfurt school
@@ -52597,7 +52559,7 @@ human nature
 porky
 tagme
 
-5/fbb49b32d4bd106c8e18b65a36a40be2b63797fd.jpeg
+5/fbb49b32d4bd106c8e18b65a36a40be2b63797fd.jpg
 communism
 nazi
 tagme
@@ -52963,7 +52925,7 @@ feels
 kropotkin
 the conquest of bread
 
-5/38569ac5784e03a29605e45c8c653cbfbcb4b0ba.jpeg
+5/38569ac5784e03a29605e45c8c653cbfbcb4b0ba.jpg
 paul joseph watson
 
 5/4f2b1d3d0fce0e71e0ab834213d8d4f03a6a7fe1.png
@@ -54131,7 +54093,7 @@ tagme
 trench coat
 ussr
 
-5/e3fca8867172643281d88830478a3410e0b97123.jpeg
+5/e3fca8867172643281d88830478a3410e0b97123.jpg
 anime
 flag
 red star
@@ -54271,7 +54233,7 @@ murray bookchin
 pepe
 tagme
 
-5/5199d303c50a34acc9b06e1cfe2a6e7ea71470be.jpeg
+5/5199d303c50a34acc9b06e1cfe2a6e7ea71470be.jpg
 hades
 irish
 tagme
@@ -54764,7 +54726,7 @@ obama
 tagme
 usa
 
-5/e27ef9f7b4bf3d30b3c4e9a8be3f568fc73d6a9c.jpeg
+5/e27ef9f7b4bf3d30b3c4e9a8be3f568fc73d6a9c.jpg
 beret
 burkina faso
 hades
@@ -55024,12 +54986,12 @@ ancap
 screencap
 tagme
 
-5/0a176bd621d532e1ef901ae303bab6c8af70b26c.jpeg
+5/0a176bd621d532e1ef901ae303bab6c8af70b26c.jpg
 hades
 stalin
 tagme
 
-5/58b9c7c11cb6c5edf21a1705301916cd36988ef3.jpeg
+5/58b9c7c11cb6c5edf21a1705301916cd36988ef3.jpg
 hades
 mutualism
 proudhon
@@ -55435,7 +55397,7 @@ sjw
 stormfag
 tagme
 
-5/ec03e83be629411a99918bb1d12c78895d3af74d.jpeg
+5/ec03e83be629411a99918bb1d12c78895d3af74d.jpg
 anarchism
 makhno
 tagme
@@ -57145,7 +57107,7 @@ just fuck my shit up
 porky
 tagme
 
-4/615e9bec0cb7d99b5378edb12035561b5b9eb4e2.jpeg
+4/615e9bec0cb7d99b5378edb12035561b5b9eb4e2.jpg
 hades
 kropotkin
 tagme
@@ -57254,7 +57216,7 @@ nietzsche
 stirner
 tagme
 
-4/ea52dc2e619a59dcacca0c6f18085ab59ddbfce6.jpeg
+4/ea52dc2e619a59dcacca0c6f18085ab59ddbfce6.jpg
 hades
 nietzsche
 tagme
@@ -57334,7 +57296,7 @@ marx
 powerpuff girls
 zizek
 
-4/c42233a21c762dfc37bdf7a5efc4e63ad66d9291.jpeg
+4/c42233a21c762dfc37bdf7a5efc4e63ad66d9291.jpg
 anarchism
 anarchist
 anarcho-communism
@@ -57472,13 +57434,13 @@ political compass
 spongebob
 tagme
 
-4/6a22596b85208b792bf63e9dc64ca3960a3a5f4b.jpeg
+4/6a22596b85208b792bf63e9dc64ca3960a3a5f4b.jpg
 castro
 cuba
 hades
 tagme
 
-4/7207e35721114151676f8ea63a7eed5b5443fd67.jpeg
+4/7207e35721114151676f8ea63a7eed5b5443fd67.jpg
 che guevara
 hades
 tagme
@@ -57508,7 +57470,7 @@ nicaragua
 reagan
 tagme
 
-4/2a4b309576ccd57c9e9909a7554f5387a5edbea0.jpeg
+4/2a4b309576ccd57c9e9909a7554f5387a5edbea0.jpg
 allende
 hades
 tagme
@@ -57532,7 +57494,7 @@ tagme
 stirner
 tagme
 
-4/c3ef32d0d7995699fcd26bfaece654a752e91a81.jpeg
+4/c3ef32d0d7995699fcd26bfaece654a752e91a81.jpg
 hades
 tagme
 unruhe
@@ -57691,7 +57653,7 @@ comic
 liberals
 tagme
 
-4/0a9dda0a1f5f104f70fbd4e91285211b7bef7891.jpeg
+4/0a9dda0a1f5f104f70fbd4e91285211b7bef7891.jpg
 hades
 hoxha
 tagme
@@ -57717,7 +57679,7 @@ born to die
 fdr
 tagme
 
-4/2dca5c1dfd0b501f236f1a328ebb2878daa26c33.jpeg
+4/2dca5c1dfd0b501f236f1a328ebb2878daa26c33.jpg
 hades
 makhno
 nestor makhno
@@ -57807,7 +57769,7 @@ deng xiaoping
 dengism
 top 10
 
-4/f6a6e439a7a8c4f16109b7dfa918f0cd836cad23.jpeg
+4/f6a6e439a7a8c4f16109b7dfa918f0cd836cad23.jpg
 hades
 pirate
 tagme
@@ -57983,7 +57945,7 @@ hades
 stirner
 tagme
 
-4/34ee315a270c0aa081b048530ac257473ea5552b.jpeg
+4/34ee315a270c0aa081b048530ac257473ea5552b.jpg
 compass
 political
 political compass
@@ -59213,7 +59175,7 @@ libertarian
 ms paint
 snake
 
-4/a2acca93948ecf06b1dc4b128b4e617daaef4dd7.jpeg
+4/a2acca93948ecf06b1dc4b128b4e617daaef4dd7.jpg
 ancap
 don't tread on me
 gadsden flag
@@ -59832,7 +59794,7 @@ quote
 socdem
 tagme
 
-4/1bff650bffa014646ff579e8bb040ad35dd6037d.jpeg
+4/1bff650bffa014646ff579e8bb040ad35dd6037d.jpg
 anarchism
 mao
 maoism
@@ -59967,27 +59929,27 @@ consider the following
 kim il sung
 tagme
 
-4/f2d1e410ece4456c1387d9aca713d7f72219c4f2.jpeg
+4/f2d1e410ece4456c1387d9aca713d7f72219c4f2.jpg
 ancap
 anime
 jojo's bizarre adventure
 nap
 tagme
 
-4/910cd1df21a93bfac8c9e3bce87a4ffc2e0f3f5a.jpeg
+4/910cd1df21a93bfac8c9e3bce87a4ffc2e0f3f5a.jpg
 ancap
 polandball
 rothbard
 tagme
 
-4/c75dd380d692171de1021df06eee85d92971482b.jpeg
+4/c75dd380d692171de1021df06eee85d92971482b.jpg
 africa
 ancap
 infographic
 polandball
 tagme
 
-4/fe84d15eb97ad8bfd824d1ff800bdd1a42c1fcf2.jpeg
+4/fe84d15eb97ad8bfd824d1ff800bdd1a42c1fcf2.jpg
 anarchism
 anarcho-communism
 ancap
@@ -60211,7 +60173,7 @@ bordiga
 do it for her
 simpsons
 
-4/30870a2c7483489b781f92fdcf626d68bdf24a61.jpeg
+4/30870a2c7483489b781f92fdcf626d68bdf24a61.jpg
 anarchism
 anarcho-communism
 ancap
@@ -60290,7 +60252,7 @@ bordiga
 opportunism
 tagme
 
-4/81d2a61d54d3fa753203c833fb869df88a352b08.jpeg
+4/81d2a61d54d3fa753203c833fb869df88a352b08.jpg
 anarchism
 anarcho-communism
 ancap
@@ -60298,13 +60260,13 @@ marcos
 subcomandante marcos
 zapatista
 
-4/73f393698723cc4e97145ec0d3d40d6cd8c4ac60.jpeg
+4/73f393698723cc4e97145ec0d3d40d6cd8c4ac60.jpg
 egoism
 egoist
 meme
 stirner
 
-4/a760b4eec208cbafdf3ef08c07d2ff46049937f1.jpeg
+4/a760b4eec208cbafdf3ef08c07d2ff46049937f1.jpg
 ancap
 polandball
 socialism
@@ -60701,7 +60663,7 @@ mexico
 tagme
 zapatista
 
-4/bc696a4cd9d0ffa0d001ca646d4d106fea67039e.jpeg
+4/bc696a4cd9d0ffa0d001ca646d4d106fea67039e.jpg
 chart
 feels
 getty
@@ -60856,7 +60818,7 @@ tagme
 third-worldism
 unruhe
 
-4/c2a382950dc09a8dacfa0273212fc2f53cfd88c8.jpeg
+4/c2a382950dc09a8dacfa0273212fc2f53cfd88c8.jpg
 che guevara
 communism
 fake quote
@@ -60893,7 +60855,7 @@ ancap
 picardía
 when
 
-4/c8ebb1fc6d53209ee89069724dc1b7e249fb9a44.jpeg
+4/c8ebb1fc6d53209ee89069724dc1b7e249fb9a44.jpg
 ancap
 picardía
 when
@@ -61189,7 +61151,7 @@ socialism
 stormfag
 tankie
 
-4/ba9e344963ec8231d392d959a0824e8598d51453.jpeg
+4/ba9e344963ec8231d392d959a0824e8598d51453.jpg
 nietzsche
 tagme
 
@@ -62098,7 +62060,7 @@ homesteading
 property
 tagme
 
-4/c5841b4d9263efc32430288aa61e72a0b926ec32.jpeg
+4/c5841b4d9263efc32430288aa61e72a0b926ec32.jpg
 anarcho-communism
 cnt-fai
 feels
@@ -62395,7 +62357,7 @@ comic
 smbc
 tagme
 
-3/364df2ac864a2d17b9b73f95f242597fbb1d6dd6.jpeg
+3/364df2ac864a2d17b9b73f95f242597fbb1d6dd6.jpg
 hotline miami
 tagme
 video games
@@ -62501,7 +62463,7 @@ spooks
 stirner
 tagme
 
-3/6c7757262204fd312bd7df7d76d78b9bc44d3745.jpeg
+3/6c7757262204fd312bd7df7d76d78b9bc44d3745.jpg
 comrade
 tagme
 
@@ -62867,7 +62829,7 @@ zizek
 tagme
 zizek
 
-3/5e0abe6d4e4d4d1dd968d00ae572ce59639eda96.jpeg
+3/5e0abe6d4e4d4d1dd968d00ae572ce59639eda96.jpg
 ben garrison
 not an argument
 stefan molyneux
@@ -63319,7 +63281,7 @@ comic
 gmil
 tagme
 
-3/56219f785296faf622556b3ab95551318a978a66.jpeg
+3/56219f785296faf622556b3ab95551318a978a66.jpg
 bernie sanders
 hillary clinton
 laughing
@@ -63752,7 +63714,7 @@ pepe
 porky
 tagme
 
-3/a7de6cc01e1e9e64b18fe4e6706b443c25326d5d.jpeg
+3/a7de6cc01e1e9e64b18fe4e6706b443c25326d5d.jpg
 libertarian
 nap
 neckbeard
@@ -63780,7 +63742,7 @@ tagme
 camus
 tagme
 
-3/b0f05498697bc8fa36a4cfd5ec9527bfc1b8e811.jpeg
+3/b0f05498697bc8fa36a4cfd5ec9527bfc1b8e811.jpg
 lacan
 tagme
 
@@ -63960,7 +63922,7 @@ tagme
 tagme
 tito
 
-3/207b8733c26b4f5e713fd41fbccc49f89ac2c6a8.jpeg
+3/207b8733c26b4f5e713fd41fbccc49f89ac2c6a8.jpg
 tagme
 zizek
 
@@ -63982,7 +63944,7 @@ nietzsche
 pistol
 tagme
 
-3/60f53c9c9ca05133d0944fbea3836e6301065686.jpeg
+3/60f53c9c9ca05133d0944fbea3836e6301065686.jpg
 alt-right
 comic
 counter counter signal
@@ -64229,7 +64191,7 @@ rebel absurdity
 reddit
 tagme
 
-3/c8ab156f06faafa46382b37e248a7d3758aa5a6c.jpeg
+3/c8ab156f06faafa46382b37e248a7d3758aa5a6c.jpg
 property
 proudhon
 tagme
@@ -64786,7 +64748,7 @@ spooks
 spurdo
 stirner
 
-3/6e57c773292a8e4a72a8ac1655bb869b429437bd.jpeg
+3/6e57c773292a8e4a72a8ac1655bb869b429437bd.jpg
 africa
 economic freedom fighters
 eff
@@ -64847,7 +64809,7 @@ nazi
 neckbeard
 tagme
 
-3/754f2f78b6587b651372c902c51066d616be8f1c.jpeg
+3/754f2f78b6587b651372c902c51066d616be8f1c.jpg
 chomsky
 quote
 tagme
@@ -65101,7 +65063,7 @@ bucko
 existential comics
 kierkegaard
 
-3/6379d1d10839c585a18a03c9fd984c3e66c4317e.jpeg
+3/6379d1d10839c585a18a03c9fd984c3e66c4317e.jpg
 tagme
 zapatista
 
@@ -65202,7 +65164,7 @@ richard dawkins
 tagme
 twitter
 
-3/f421ac0cc7f4840bd8b8a490510164df04e8e4c9.jpeg
+3/f421ac0cc7f4840bd8b8a490510164df04e8e4c9.jpg
 porky
 propaganda
 tagme
@@ -65299,7 +65261,7 @@ foucault
 tagme
 ugly son of a bitch
 
-3/617bb4518e41e3d64c56a8e6bca53048e554167b.jpeg
+3/617bb4518e41e3d64c56a8e6bca53048e554167b.jpg
 bernie sanders
 communism
 hammer and sickle
@@ -65413,7 +65375,7 @@ simpsons
 state capitalism
 tagme
 
-3/c0dc2938f5286bfa48dae8a219ee51a3661c4bdf.jpeg
+3/c0dc2938f5286bfa48dae8a219ee51a3661c4bdf.jpg
 bernie sanders
 cuba
 marco rubio
@@ -66558,7 +66520,7 @@ tagme
 america
 tagme
 
-3/47c171f998842c4cdd213e153b93c27049351ead.jpeg
+3/47c171f998842c4cdd213e153b93c27049351ead.jpg
 bernie sanders
 isis
 tagme
@@ -67105,7 +67067,7 @@ false-flag
 idpol
 sjw
 
-3/33b10a618beb434cd7ef4af11e45bef0dc9e4aaf.jpeg
+3/33b10a618beb434cd7ef4af11e45bef0dc9e4aaf.jpg
 soviet
 tagme
 trash
@@ -67222,7 +67184,7 @@ hillary clinton
 tagme
 trump
 
-3/f6a514eb36e8c8885ca1b2f814b434fd51ffd390.jpeg
+3/f6a514eb36e8c8885ca1b2f814b434fd51ffd390.jpg
 bernie sanders
 tagme
 
@@ -67251,35 +67213,35 @@ revisionism
 stalin
 tagme
 
-3/b0a9bcdda74f220f6d3dac97cb1ea493fab4b279.jpeg
+3/b0a9bcdda74f220f6d3dac97cb1ea493fab4b279.jpg
 china
 maoism
 panda
 propaganda
 tagme
 
-3/8dd71eebea55c3a6851e225129110d1b2179c810.jpeg
+3/8dd71eebea55c3a6851e225129110d1b2179c810.jpg
 china
 maoism
 panda
 propaganda
 tagme
 
-3/71dd6d9d0e330aea16a581e72c3105753dde66d6.jpeg
+3/71dd6d9d0e330aea16a581e72c3105753dde66d6.jpg
 china
 maoism
 panda
 propaganda
 tagme
 
-3/e712bba36eb15983bd63554e9a4fcf7ee1725aa0.jpeg
+3/e712bba36eb15983bd63554e9a4fcf7ee1725aa0.jpg
 china
 maoism
 panda
 propaganda
 tagme
 
-3/ea38a9851cf565432f6c13d27d9381ec9651d7a4.jpeg
+3/ea38a9851cf565432f6c13d27d9381ec9651d7a4.jpg
 china
 maoism
 panda
@@ -67808,7 +67770,7 @@ tagme
 trotsky
 wsws
 
-3/f5526a973f50eef271aca9c47b44ed74bc3c46ee.jpeg
+3/f5526a973f50eef271aca9c47b44ed74bc3c46ee.jpg
 porky
 tagme
 
@@ -67829,7 +67791,7 @@ america
 porky
 tagme
 
-3/de66699d5e497973fc8cdc7d36cca0704eb4e2b4.jpeg
+3/de66699d5e497973fc8cdc7d36cca0704eb4e2b4.jpg
 ben garrison
 porky
 tagme
@@ -67934,7 +67896,7 @@ tagme
 hillary clinton
 tagme
 
-3/f1a71d61455efd89f806718be7acb5c989f24fe5.jpeg
+3/f1a71d61455efd89f806718be7acb5c989f24fe5.jpg
 bernie sanders
 hillary clinton
 tagme
@@ -67952,17 +67914,17 @@ rothbard
 tolstoy
 voluntaryism
 
-3/a996b6bd9b47b80d9eb7d3c8d36cce6ed30076da.jpeg
+3/a996b6bd9b47b80d9eb7d3c8d36cce6ed30076da.jpg
 emma goldman
 quote
 tagme
 
-3/98e4c26b958be8542f4be71449ca747cf8835faa.jpeg
+3/98e4c26b958be8542f4be71449ca747cf8835faa.jpg
 capitalism
 socialism
 tagme
 
-3/302bf270074adf187ace1055e8307f5898cb5f9a.jpeg
+3/302bf270074adf187ace1055e8307f5898cb5f9a.jpg
 freedom ain't free
 gilles deleuze
 hegel
@@ -68508,7 +68470,7 @@ tagme
 traditionalism
 traditionalist
 
-2/7974c4c77bc6c1e7220f6f1881796f2d54711e4a.jpeg
+2/7974c4c77bc6c1e7220f6f1881796f2d54711e4a.jpg
 bourgeoisie
 capitalism
 porky
@@ -68864,7 +68826,7 @@ marxism
 simpsons
 tagme
 
-2/1f07f97207a8a7fbd73ef752c9bff5a1bf96f5cb.jpeg
+2/1f07f97207a8a7fbd73ef752c9bff5a1bf96f5cb.jpg
 america
 chart
 cia
@@ -69214,7 +69176,7 @@ anarchism
 cat
 tagme
 
-2/3637a6448b9090c4f59faa7cb982c2c15c3b4909.jpeg
+2/3637a6448b9090c4f59faa7cb982c2c15c3b4909.jpg
 anarchist
 cat
 comic
@@ -69766,7 +69728,7 @@ tagme
 gulag
 tagme
 
-2/b56b73f6393b58099c4ea7e8093c835f1667a33f.jpeg
+2/b56b73f6393b58099c4ea7e8093c835f1667a33f.jpg
 cat
 tagme
 zizek
@@ -72077,7 +72039,7 @@ comrade
 lenin
 tagme
 
-2/875cff4b8c9c3b7bcc061efa11e060f350e1942b.jpeg
+2/875cff4b8c9c3b7bcc061efa11e060f350e1942b.jpg
 spookbuster
 spooks
 stirner
@@ -72410,7 +72372,7 @@ fairly oddparents
 ms paint
 tagme
 
-2/caf088744891ec4973314ba32a9f289bca7540c2.jpeg
+2/caf088744891ec4973314ba32a9f289bca7540c2.jpg
 america
 bernie sanders
 communism
@@ -72771,7 +72733,7 @@ tagme
 fascism
 tagme
 
-2/ed73cbe8e4c2c41664c8d5f91ac34e8f32de3b4f.jpeg
+2/ed73cbe8e4c2c41664c8d5f91ac34e8f32de3b4f.jpg
 capitalism
 fascism
 tagme
@@ -74017,7 +73979,7 @@ soviet
 tagme
 ussr
 
-2/5f3f7c412c51d4cdbf730cf0986cb01f98936a9a.jpeg
+2/5f3f7c412c51d4cdbf730cf0986cb01f98936a9a.jpg
 reaction image
 soviet
 tagme
@@ -74182,7 +74144,7 @@ tagme
 ypg
 ypj
 
-1/8149eaced5d764aa065ca4f275d74a1f5633450d.jpeg
+1/8149eaced5d764aa065ca4f275d74a1f5633450d.jpg
 che guevara
 cigar
 photo
@@ -74318,7 +74280,7 @@ lenin
 sage
 tagme
 
-1/4986877b629d25813fe64ab08de6ef0e205b589d.jpeg
+1/4986877b629d25813fe64ab08de6ef0e205b589d.jpg
 chomskek
 chomsky
 tagme
@@ -76069,7 +76031,7 @@ trump
 tagme
 tito
 
-1/6603e8ee127af7418d48c59c25e23cae4e55c162.jpeg
+1/6603e8ee127af7418d48c59c25e23cae4e55c162.jpg
 ancap
 nap
 tagme
@@ -76956,7 +76918,7 @@ pacha
 stalin
 tagme
 
-1/a052c49c4002b90b4975864e8bb614e51d3d9d89.jpeg
+1/a052c49c4002b90b4975864e8bb614e51d3d9d89.jpg
 bernie sanders
 hillary clinton
 tagme
@@ -76987,7 +76949,7 @@ bernie sanders
 hillary clinton
 tagme
 
-1/1892847a5986babf374a31577094410341d28fb7.jpeg
+1/1892847a5986babf374a31577094410341d28fb7.jpg
 bernie sanders
 hillary clinton
 tagme
@@ -77717,7 +77679,7 @@ infographic
 music
 tagme
 
-1/1553cf802a583b1a492f866335b8d4942a5dd5ea.jpeg
+1/1553cf802a583b1a492f866335b8d4942a5dd5ea.jpg
 /leftypol/
 chart
 infographic
@@ -77731,13 +77693,13 @@ movie
 reading list
 tagme
 
-1/53f646c3cbf673b8be00c243e0b8b948e6b229c3.jpeg
+1/53f646c3cbf673b8be00c243e0b8b948e6b229c3.jpg
 /leftypol/
 infographic
 movie
 tagme
 
-1/293f6a031ad4f38956e03aa0ae56be76c22bdcdd.jpeg
+1/293f6a031ad4f38956e03aa0ae56be76c22bdcdd.jpg
 /leftypol/
 infographic
 reading list
@@ -77752,7 +77714,7 @@ leninism
 reading list
 tagme
 
-1/b49188d6d830a26c02638495db91746f9a37a48f.jpeg
+1/b49188d6d830a26c02638495db91746f9a37a48f.jpg
 /leftypol/
 abdullah ocalan
 angela davis
@@ -77776,7 +77738,7 @@ reading list
 tagme
 work
 
-1/6776803e88701ea1fbdc21f49600e74977e8e582.jpeg
+1/6776803e88701ea1fbdc21f49600e74977e8e582.jpg
 /leftypol/
 books
 chart
@@ -77786,7 +77748,7 @@ leninism
 reading list
 tagme
 
-1/27ba4bec9e8354fef169de73e1f20ad6cc5b7ddc.jpeg
+1/27ba4bec9e8354fef169de73e1f20ad6cc5b7ddc.jpg
 books
 chart
 communism
@@ -78331,7 +78293,7 @@ anarchist
 molotov cocktail
 tagme
 
-1/39fe3af78bac8c50edaeba384433b584532c1a11.jpeg
+1/39fe3af78bac8c50edaeba384433b584532c1a11.jpg
 bourgeois
 lenin
 petit-bourgeois
@@ -78750,7 +78712,7 @@ bottle
 bottle opener
 sickle and hammer
 
-1/0e6123c25256ec1c4cd1d3a450e18a082304f684.jpeg
+1/0e6123c25256ec1c4cd1d3a450e18a082304f684.jpg
 bolshevik
 charlie brown
 hammer and sickle
@@ -78856,7 +78818,7 @@ lewd
 nude
 titjob
 
-1/7f065ebff60b3c4329c319d212f0520d1fdf99cb.jpeg
+1/7f065ebff60b3c4329c319d212f0520d1fdf99cb.jpg
 anime
 balalaika
 black lagoon
@@ -80125,7 +80087,7 @@ liberty
 quote
 usa
 
-1/aa0f7157d3462e33ee2afcad9d0453589d5b63e3.jpeg
+1/aa0f7157d3462e33ee2afcad9d0453589d5b63e3.jpg
 oppression
 quote
 voltaire
