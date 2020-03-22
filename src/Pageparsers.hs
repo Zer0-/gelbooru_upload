@@ -3,6 +3,7 @@
 module Pageparsers
     ( imageLinks
     , imagePageFilenameTags
+    , posts
     ) where
 
 import Text.XML.HXT.Core
@@ -21,6 +22,7 @@ import Data.Text (unpack, pack)
 import Text.URI (mkURI, URI)
 import Data.ByteString (ByteString)
 import Data.Text.Encoding (decodeUtf8)
+import Data.List.Split (splitOn)
 --import Text.XML.HXT.DOM.ShowXml (xshow)
 import Text.XML.HXT.CSS (css)
 import Network.HTTP.Req (Option, useHttpsURI, Scheme (..))
@@ -58,3 +60,19 @@ imagePageFilenameTags rawdoc = do
     tags <- runX $ mkdoc rawdoc >>> css "#tag_list > ul > li > span > a" >>> getChildren >>> getText
 
     return (head filename, tags)
+
+posts :: ByteString -> IO [ (Int, String) ]
+posts rawdoc = do
+    ids <- runX $ doc >>> css "span.thumb > a" >>> getAttrValue "id"
+    filenames <- runX $ doc >>> css "span.thumb > a > img" >>> getAttrValue "src"
+
+    return $ zip (map parseId ids) (map parseFilename filenames)
+
+    where
+        doc = mkdoc rawdoc
+
+        parseId :: String -> Int
+        parseId = read . (drop 1)
+
+        parseFilename :: String -> String
+        parseFilename = last . (splitOn "_")

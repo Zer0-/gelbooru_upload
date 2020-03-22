@@ -6,7 +6,7 @@ import System.Environment (getArgs)
 import System.FilePath (FilePath, (</>))
 import qualified Data.Map as Map
 import Data.ByteString (ByteString)
-import Data.List (intercalate)
+import Data.List (intercalate, sort)
 import Data.List.Split (splitWhen, splitOn)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Base64.URL as BSURL
@@ -46,10 +46,10 @@ import Network.HTTP.Req
     , Url
     , Scheme (..)
     )
-import Debug.Trace (trace)
+--import Debug.Trace (trace)
 import Text.XML.HXT.DOM.Util (uncurry3)
 
-import Pageparsers (imageLinks, imagePageFilenameTags)
+import Pageparsers (imageLinks, imagePageFilenameTags, posts)
 import FSMemoize (fsmemoize)
 
 -- login page (new): https://leftypol.booru.org/index.php?page=login
@@ -60,6 +60,9 @@ old_booru_base_url = https "lefty.booru.org" /: "index.php"
 
 new_booru_base_url :: Url 'Https
 new_booru_base_url = https "leftypol.booru.org" /: "index.php"
+
+new_booru_edit_url :: Url 'Https
+new_booru_edit_url = https "leftypol.booru.org" /: "public" /: "edit_post.php"
 
 new_booru_base_url_plaintext :: Url 'Http
 new_booru_base_url_plaintext = http "leftypol.booru.org" /: "index.php"
@@ -117,32 +120,48 @@ hashUrl :: Url scheme -> Option scheme -> String
 hashUrl url params = hash $ urlToBS url params
 
 
-fetchOldBooruPage :: String -> Int -> IO [ Option 'Https ]
-fetchOldBooruPage datadir i = do
+fetchPageData
+    :: String
+    -> (ByteString -> IO a)
+    -> Url scheme
+    -> Option scheme
+    -> IO a
+fetchPageData datadir process url params = do
     rawdoc <- getRawPageBody
             datadir
-            old_booru_base_url
+            url
             params
 
-    putStrLn $ (show i) ++ " " ++ (hashUrl old_booru_base_url params)
-    imageLinks rawdoc
+    putStrLn $
+        show url
+        ++ (BS.unpack $ renderParams params)
+        ++ " " ++ hashUrl url params
+
+    process rawdoc
+
+
+fetchOldBooruPage
+    :: String
+    -> Int
+    -> IO [ Option 'Https ]
+fetchOldBooruPage datadir i = do
+    fetchPageData datadir imageLinks old_booru_base_url params
 
     where
-        params = (old_booru_base_params <> "pid" =: i)
+        params = old_booru_base_params <> "pid" =: i
 
 
 fetchOldBooruImagePage :: String -> Option 'Https -> IO ()
 fetchOldBooruImagePage datadir params = do
-    rawdoc <- getRawPageBody
-            datadir
-            old_booru_base_url
-            params
+    fetchPageData datadir process old_booru_base_url params
 
-    print $ renderParams params
-    (filename, tags) <- imagePageFilenameTags rawdoc
-    putStrLn filename
-    mapM_ (putStrLn . ((++) "  ")) tags
-    putStrLn ""
+    where
+        process rawdoc = do
+            print $ renderParams params
+            (filename, tags) <- imagePageFilenameTags rawdoc
+            putStrLn filename
+            mapM_ (putStrLn . ((++) "  ")) tags
+            putStrLn ""
 
 login_ :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
 login_ url params payload = runReq defaultHttpConfig $
@@ -280,6 +299,30 @@ archiveOldMetadata = do
     where
         idlist = [i * 20 | i <- [0..(10800 `quot` 20)]]
 
+userPosts
+    :: String
+    -> String
+    -> (ByteString -> IO a)
+    -> Int
+    -> IO a
+userPosts datadir username process i = do
+    fetchPageData datadir process new_booru_base_url params
+
+    where
+        params
+            = "page" =: ("post" :: String)
+            <> "s" =: ("list" :: String)
+            <> "tags" =: ("user:" ++ username :: String)
+            <> "pid" =: i
+
+allUserPosts :: String -> String -> IO [(Int, String)]
+allUserPosts datadir username = do
+    posts_ <- mapM
+        (userPosts datadir username posts)
+        [i * 20 | i <- [0..(10180 `quot` 20)]]
+
+    return (concat posts_)
+
 parseFileList :: String -> [(String, [String])]
 parseFileList
     = (map (\(x:xs) -> (x, xs)))
@@ -294,8 +337,8 @@ parseMimeFile
     . (drop 1)
     . lines
 
-main :: IO ()
-main = do
+uploadMain :: IO ()
+uploadMain = do
     args <- getArgs
     let datadir = head args
     let username = head $ drop 1 args
@@ -340,3 +383,96 @@ main = do
         )
         (parseFileList tagsdata)
         --[head (parseFileList tagsdata)]
+
+mkTagUpdatePostParams
+    :: Int
+    -> [ String ]
+    -> ReqBodyUrlEnc
+mkTagUpdatePostParams i tags = ReqBodyUrlEnc $
+    "rating"           =: ("q" :: String)
+    <> "title"         =: ("" :: String)
+    <> "parent"        =: ("" :: String)
+    <> "next_post"     =: ("" :: String)
+    <> "previous_post" =: ("" :: String)
+    <> "source"        =: ("" :: String)
+    <> "tags"          =: intercalate " " tags
+    <> "pconf"         =: (1 :: Int)
+    <> "id"            =: show i
+    <> "submit"        =: ("Save+changes" :: String)
+
+postTagUpdate_
+    :: Int
+    -> [ String ]
+    -> CookieJar
+    -> IO ByteString
+postTagUpdate_ i tags cookies = runReq defaultHttpConfig $ do
+    r <- req
+        POST
+        new_booru_edit_url
+        (mkTagUpdatePostParams i tags)
+        bsResponse
+        (cookieJar cookies)
+
+    case responseStatusCode r of
+        200 -> liftIO $ return $ responseBody r
+        _ -> error "Upload failed"
+
+postTagUpdate
+    :: String
+    -> Int
+    -> [ String ]
+    -> CookieJar
+    -> IO ByteString
+postTagUpdate datadir i tags cookies = do
+    putStrLn $ "update tags " ++ hashTagUpdate i tags cookies
+    putStrLn ""
+
+    fsmemoize
+        datadir
+        (uncurry3 hashTagUpdate)
+        (uncurry3 postTagUpdate_)
+        (i, tags, cookies)
+
+    where
+        hashTagUpdate i_ tags_ _ = hash $ BS.concat
+            [ BS.pack $ show new_booru_edit_url
+            , BS.pack $ show i_
+            , BS.pack $ concat (sort tags_)
+            ]
+
+main :: IO ()
+main = do
+    args <- getArgs
+    let datadir = head args
+    let username = head $ drop 1 args
+    let password = head $ drop 2 args
+    let tags_filename = head $ drop 3 args
+
+    putStrLn $ "login cookie jar filename: " ++ hashUrl new_booru_base_url new_booru_login_params
+
+    cookies <- login
+        datadir
+        new_booru_base_url
+        new_booru_login_params
+        (mkloginParams username password)
+
+    print cookies
+
+    tagsdata <- readFile tags_filename
+
+    let tagmap = Map.fromList $ map
+            (\(f, tgs) -> (last $ splitOn "/" f, tgs))
+            (parseFileList tagsdata)
+
+    posts_ <- allUserPosts datadir username
+    print $ length posts_
+
+    mapM_
+        (\(i, filename) -> do
+            putStrLn filename
+            let tags = Map.findWithDefault [] filename tagmap
+            putStrLn $
+                (show i) ++ " " ++ filename ++ " " ++ (intercalate " " tags)
+            postTagUpdate datadir i tags cookies
+        )
+        posts_
