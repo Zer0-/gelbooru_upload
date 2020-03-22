@@ -12,7 +12,7 @@ def makePairs(filename):
         then(addtag)
 
     def addtag(l):
-        cur_tags.append(l.strip())
+        cur_tags.append(l.strip().replace(' ', '_'))
         then(addtag)
 
     def pop():
