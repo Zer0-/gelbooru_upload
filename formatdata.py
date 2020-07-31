@@ -8,7 +8,7 @@ def makePairs(filename):
 
     def parseurl(l):
         nonlocal cur_fname
-        cur_fname = "/".join(l.split('/')[-2:]).strip().replace('.jpeg', '.jpg')
+        cur_fname = "/".join(l.split('/')[-2:]).strip()#.replace('.jpeg', '.jpg')
         then(addtag)
 
     def addtag(l):
@@ -57,7 +57,8 @@ if __name__ == "__main__":
     from pprint import pprint
     import csv
 
-    pairs = list(makePairs('./data/tag_data.txt'))
+    #pairs = list(makePairs('./data/tag_data.txt'))
+    pairs = list(makePairs('./data/new_booru_tag_data.txt'))
     lines = []
 
     for (filename, tags) in pairs:

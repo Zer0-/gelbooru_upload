@@ -5,7 +5,7 @@ module Main where
 import System.Environment (getArgs)
 import System.FilePath (FilePath, (</>))
 import qualified Data.Map as Map
-import Data.ByteString (ByteString)
+import Data.ByteString (ByteString, empty)
 import Data.List (intercalate, sort)
 import Data.List.Split (splitWhen, splitOn)
 import qualified Data.ByteString.Char8 as BS
@@ -61,27 +61,45 @@ old_booru_base_url = https "lefty.booru.org" /: "index.php"
 new_booru_base_url :: Url 'Https
 new_booru_base_url = https "leftypol.booru.org" /: "index.php"
 
+new_new_booru_base_url :: Url 'Https
+new_new_booru_base_url = https "leftypics.booru.org" /: "index.php"
+
 new_booru_edit_url :: Url 'Https
 new_booru_edit_url = https "leftypol.booru.org" /: "public" /: "edit_post.php"
 
 new_booru_base_url_plaintext :: Url 'Http
 new_booru_base_url_plaintext = http "leftypol.booru.org" /: "index.php"
 
-old_booru_base_params :: Option 'Https
-old_booru_base_params
+new_booru_delete_url :: Url 'Https
+new_booru_delete_url = https "leftypol.booru.org" /: "public" /: "remove.php"
+
+booru_base_params :: Option 'Https
+booru_base_params
     =  "page" =: ("post" :: String)
     <> "s" =: ("list" :: String)
     <> "tags" =: ("all" :: String)
 
-new_booru_login_params :: Option 'Https
-new_booru_login_params
+booru_login_params :: Option 'Https
+booru_login_params
     =  "page" =: ("login" :: String)
     <> "code" =: ("00" :: String)
 
-new_booru_post_params :: Option 'Https
-new_booru_post_params
+booru_post_params :: Option 'Https
+booru_post_params
     =  "page" =: ("post" :: String)
     <> "s" =: ("add" :: String)
+
+booru_view_id_params :: Option 'Https
+booru_view_id_params
+    =  "page" =: ("post" :: String)
+    <> "s" =: ("view" :: String)
+    --"index.php?page=post&s=view&id=1200
+
+delete_post_params :: Int -> Option 'Https
+delete_post_params i
+    = "id" =: i
+    <> "removepost" =: (1 :: Int)
+            -- ./public/remove.php?id=11204&amp;removepost=1
 
 getRawPageBody_ :: Url scheme -> Option scheme -> IO ByteString
 getRawPageBody_ url params = runReq defaultHttpConfig $ do
@@ -140,20 +158,21 @@ fetchPageData datadir process url params = do
     process rawdoc
 
 
-fetchOldBooruPage
+fetchBooruPostPage
     :: String
+    -> Url 'Https
     -> Int
     -> IO [ Option 'Https ]
-fetchOldBooruPage datadir i = do
-    fetchPageData datadir imageLinks old_booru_base_url params
+fetchBooruPostPage datadir url i = do
+    fetchPageData datadir imageLinks url params
 
     where
-        params = old_booru_base_params <> "pid" =: i
+        params = booru_base_params <> "pid" =: i
 
 
-fetchOldBooruImagePage :: String -> Option 'Https -> IO ()
-fetchOldBooruImagePage datadir params = do
-    fetchPageData datadir process old_booru_base_url params
+fetchBooruImagePage :: String -> Url a -> Option a -> IO ()
+fetchBooruImagePage datadir url params = do
+    fetchPageData datadir process url params
 
     where
         process rawdoc = do
@@ -286,15 +305,17 @@ post mime datadir url params imgdir cookies filename tags =
         (mime, url, params, imgdir, cookies, filename, tags)
 
 
-archiveOldMetadata :: IO ()
-archiveOldMetadata = do
+archiveMetadata :: IO ()
+archiveMetadata = do
     args <- getArgs
     let datadir = head args
 
     let img_links =
-            (mapM (fetchOldBooruPage datadir) idlist) :: IO [[ Option 'Https ]]
+            (mapM (fetchBooruPostPage datadir new_booru_base_url) idlist) :: IO [[ Option 'Https ]]
     
-    img_links >>= (mapM_ (fetchOldBooruImagePage datadir)) . concat
+    img_links
+        >>= (mapM_ (fetchBooruImagePage datadir new_booru_base_url))
+        . concat
 
     where
         idlist = [i * 20 | i <- [0..(10800 `quot` 20)]]
@@ -337,8 +358,8 @@ parseMimeFile
     . (drop 1)
     . lines
 
-uploadMain :: IO ()
-uploadMain = do
+main :: IO ()
+main = do
     args <- getArgs
     let datadir = head args
     let username = head $ drop 1 args
@@ -347,12 +368,12 @@ uploadMain = do
     let pictures_dir = head $ drop 4 args
     let images_mime_file = head $ drop 5 args
 
-    putStrLn $ "login cookie jar filename: " ++ hashUrl new_booru_base_url new_booru_login_params
+    putStrLn $ "login cookie jar filename: " ++ hashUrl new_new_booru_base_url booru_login_params
 
     cookies <- login
         datadir
-        new_booru_base_url
-        new_booru_login_params
+        new_new_booru_base_url
+        booru_login_params
         (mkloginParams username password)
 
     print cookies
@@ -364,8 +385,8 @@ uploadMain = do
         ( \(filename, tags) -> do
             putStrLn $ filename ++ " " ++ hashPostArgs
                     mime_types
-                    new_booru_base_url
-                    new_booru_post_params
+                    new_new_booru_base_url
+                    booru_post_params
                     pictures_dir
                     cookies
                     filename
@@ -374,15 +395,16 @@ uploadMain = do
             post
                 mime_types
                 datadir
-                new_booru_base_url
-                new_booru_post_params
+                new_new_booru_base_url
+                booru_post_params
                 pictures_dir
                 cookies
                 filename
                 tags
         )
         (parseFileList tagsdata)
-        --[head (parseFileList tagsdata)]
+        --(take 100 (parseFileList tagsdata))
+        --[head $ parseFileList tagsdata]
 
 mkTagUpdatePostParams
     :: Int
@@ -440,20 +462,20 @@ postTagUpdate datadir i tags cookies = do
             , BS.pack $ concat (sort tags_)
             ]
 
-main :: IO ()
-main = do
+reTag :: IO ()
+reTag = do
     args <- getArgs
     let datadir = head args
     let username = head $ drop 1 args
     let password = head $ drop 2 args
     let tags_filename = head $ drop 3 args
 
-    putStrLn $ "login cookie jar filename: " ++ hashUrl new_booru_base_url new_booru_login_params
+    putStrLn $ "login cookie jar filename: " ++ hashUrl new_booru_base_url booru_login_params
 
     cookies <- login
         datadir
         new_booru_base_url
-        new_booru_login_params
+        booru_login_params
         (mkloginParams username password)
 
     print cookies
@@ -475,4 +497,64 @@ main = do
                 (show i) ++ " " ++ filename ++ " " ++ (intercalate " " tags)
             postTagUpdate datadir i tags cookies
         )
+        posts_
+
+removePost_
+    :: Int
+    -> CookieJar
+    -> IO ByteString
+removePost_ i cookies = runReq defaultHttpConfig $ do
+    r <- req
+        POST
+        new_booru_delete_url
+        NoReqBody
+        ignoreResponse
+        (delete_post_params i <> cookieJar cookies)
+
+    case responseStatusCode r of
+        200 -> liftIO $ return $ empty
+        _ -> error "Delete failed"
+
+removePost
+    :: String
+    -> Int
+    -> CookieJar
+    -> IO ()
+removePost datadir i cookies = do
+    putStrLn $ "Delete " ++ show i ++ " " ++ h
+
+    _ <- fsmemoize
+        datadir
+        (const h)
+        (const $ removePost_ i cookies)
+        (i, cookies)
+
+    return ()
+
+    where
+        h = hashUrl new_booru_delete_url (delete_post_params i)
+        
+
+deletePosts :: IO ()
+deletePosts = do
+    args <- getArgs
+    let datadir = head args
+    let username = head $ drop 1 args
+    let password = head $ drop 2 args
+
+    putStrLn $ "login cookie jar filename: " ++ hashUrl new_booru_base_url booru_login_params
+
+    cookies <- login
+        datadir
+        new_booru_base_url
+        booru_login_params
+        (mkloginParams username password)
+
+    print cookies
+
+
+    posts_ <- allUserPosts datadir username
+
+    mapM_
+        (\(i, _) -> removePost datadir i cookies)
         posts_
