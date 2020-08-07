@@ -4,6 +4,7 @@ module Pageparsers
     ( imageLinks
     , imagePageFilenameTags
     , posts
+    , threadsInCatalog
     ) where
 
 import Text.XML.HXT.Core
@@ -60,6 +61,10 @@ imagePageFilenameTags rawdoc = do
     tags <- runX $ mkdoc rawdoc >>> css "#tag_list > ul > li > span > a" >>> getChildren >>> getText
 
     return (head filename, tags)
+
+threadsInCatalog :: ByteString -> IO [ String ]
+threadsInCatalog rawdoc =
+    runX $ mkdoc rawdoc >>> css "#divThreads > .catalogCell > .linkThumb" >>> getAttrValue "href"
 
 posts :: ByteString -> IO [ (Int, String) ]
 posts rawdoc = do

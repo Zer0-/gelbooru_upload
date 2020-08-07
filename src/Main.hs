@@ -34,6 +34,7 @@ import Network.HTTP.Req
     , FormUrlEncodedParam
     , https
     , http
+    , port
     , bsResponse
     , ignoreResponse
     , responseBody
@@ -49,7 +50,7 @@ import Network.HTTP.Req
 --import Debug.Trace (trace)
 import Text.XML.HXT.DOM.Util (uncurry3)
 
-import Pageparsers (imageLinks, imagePageFilenameTags, posts)
+import Pageparsers (imageLinks, imagePageFilenameTags, posts, threadsInCatalog)
 import FSMemoize (fsmemoize)
 
 -- login page (new): https://leftypol.booru.org/index.php?page=login
@@ -101,8 +102,11 @@ delete_post_params i
     <> "removepost" =: (1 :: Int)
             -- ./public/remove.php?id=11204&amp;removepost=1
 
-getRawPageBody_ :: Url scheme -> Option scheme -> IO ByteString
-getRawPageBody_ url params = runReq defaultHttpConfig $ do
+bunkerchan_leftypol_catalog :: Url 'Http
+bunkerchan_leftypol_catalog = http "127.0.0.1" /: "leftypol" /: "catalog.html"
+
+fetchPageDataU :: Url scheme -> Option scheme -> IO ByteString
+fetchPageDataU url params = runReq defaultHttpConfig $ do
     r <- req
         GET
         url
@@ -117,7 +121,7 @@ getRawPageBody datadir url params =
     fsmemoize
         datadir
         (uncurry hashUrl)
-        (uncurry getRawPageBody_)
+        (uncurry fetchPageDataU)
         (url, params)
 
 renderParams :: Option scheme -> ByteString
@@ -158,12 +162,29 @@ fetchPageData datadir process url params = do
     process rawdoc
 
 
+fetchAndProcessPageDataU
+    :: (ByteString -> IO a)
+    -> Url scheme
+    -> Option scheme
+    -> IO a
+fetchAndProcessPageDataU process url params = do
+    rawdoc <- fetchPageDataU
+            url
+            params
+
+    putStrLn $
+        "[GET]"
+        ++ show url
+        ++ (BS.unpack $ renderParams params)
+
+    process rawdoc
+
 fetchBooruPostPage
     :: String
     -> Url 'Https
     -> Int
     -> IO [ Option 'Https ]
-fetchBooruPostPage datadir url i = do
+fetchBooruPostPage datadir url i =
     fetchPageData datadir imageLinks url params
 
     where
@@ -171,7 +192,7 @@ fetchBooruPostPage datadir url i = do
 
 
 fetchBooruImagePage :: String -> Url a -> Option a -> IO ()
-fetchBooruImagePage datadir url params = do
+fetchBooruImagePage datadir url params =
     fetchPageData datadir process url params
 
     where
@@ -181,6 +202,19 @@ fetchBooruImagePage datadir url params = do
             putStrLn filename
             mapM_ (putStrLn . ((++) "  ")) tags
             putStrLn ""
+
+fetchPostsFromBunkerCatalogPage :: Url a -> Option a -> IO [ String ]
+fetchPostsFromBunkerCatalogPage url params =
+    fetchAndProcessPageDataU process url params
+
+    where
+        process rawdoc = do
+            print $ renderParams params
+            putStrLn "threads on this catalog:"
+            threadPaths <- threadsInCatalog rawdoc
+            mapM_ putStrLn threadPaths
+            putStrLn ""
+            return threadPaths
 
 login_ :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
 login_ url params payload = runReq defaultHttpConfig $
@@ -358,8 +392,8 @@ parseMimeFile
     . (drop 1)
     . lines
 
-main :: IO ()
-main = do
+main_old :: IO ()
+main_old = do
     args <- getArgs
     let datadir = head args
     let username = head $ drop 1 args
@@ -405,6 +439,18 @@ main = do
         (parseFileList tagsdata)
         --(take 100 (parseFileList tagsdata))
         --[head $ parseFileList tagsdata]
+
+
+main :: IO ()
+main = do
+    putStrLn "Hello World"
+
+    _<- fetchPostsFromBunkerCatalogPage
+            bunkerchan_leftypol_catalog
+            (port 8080)
+
+    putStrLn "Done"
+
 
 mkTagUpdatePostParams
     :: Int
