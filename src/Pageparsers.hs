@@ -17,13 +17,14 @@ import Text.XML.HXT.Core
     , yes
     , no
     , (>>>)
-    , (&&&)
     , getAttrValue
     , getText
     , getChildren
+    , hasAttr
     , returnA
     , withDefault
     , arr
+    , listA
     )
 import Data.Text (unpack, pack)
 import Text.URI (mkURI, URI)
@@ -75,7 +76,7 @@ data Post = Post
     { attachments :: [ Attachment ]
     , subject :: Maybe String
     , email :: Maybe String
-    , name :: Maybe String
+    , name :: String
     , post :: [ PostPart ]
     } deriving Show
 
@@ -108,41 +109,47 @@ threadsInCatalog rawdoc =
 
 
 {- Bunkerchan -}
-{-
 parsePost :: Doc Post
-parsePost = arrL undefined
--}
-
-parsePost :: Doc String
-parsePost = css ".labelSubject" >>> getChildren >>> getText
-
-{-
-parseOP :: Doc String
-parseOP = css ".opHead .labelSubject" >>> getChildren >>> getText
--}
-
-parseOP :: Doc Post
-parseOP = css ".opHead" >>>
+parsePost =
     proc l -> do
-        subject <- withDefault get_subject Nothing -< l
+        subjectField <- withDefault getSubject Nothing -< l
+        nameField <- getName -< l
+        emailField <- withDefault getEmail Nothing -< l
+
         returnA -< Post
             { attachments = []
-            , subject = subject
-            , email = Nothing
-            , name = Nothing
+            , subject = subjectField
+            , email = emailField
+            , name = nameField
             , post = []
             }
 
     where
-        get_subject = css ".labelSubject" >>> getChildren >>> getText >>> arr Just
+        getSubject = css ".labelSubject" >>> getChildren >>> getText >>> arr Just
+        getName = css "a.linkName" >>> getChildren >>> getText
+        getEmail
+            = css "a.linkName"
+            >>> hasAttr "href"
+            >>> getAttrValue "href"
+            >>> arr (Just . extractEmail)
+        extractEmail = drop (length "mailto:")
+
 --getChildren >>> getText
 
 {- Bunkerchan -}
 postsInThread :: ByteString -> IO [ Post ]
 postsInThread rawdoc = do
-    parsedOpStuff <- runX $ mkdoc rawdoc >>> parseOP
+    allPosts <- runX $
+        mkdoc rawdoc >>> proc l ->
+                do
+                    op <- css ".opHead" >>> parsePost -< l
+                    ps <- listA getPosts -< l
+                    returnA -< (op, ps)
 
-    return $ parsedOpStuff
+    return $ (\(op, xs) -> op : xs) (head allPosts)
+
+    where
+        getPosts = css ".postCell > div" >>> parsePost
 
 posts :: ByteString -> IO [ (Int, String) ]
 posts rawdoc = do
