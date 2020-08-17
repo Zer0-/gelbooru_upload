@@ -8,6 +8,7 @@ import qualified Data.Map as Map
 import Data.ByteString (ByteString, empty)
 import Data.List (intercalate, sort)
 import Data.List.Split (splitWhen, splitOn)
+import qualified Data.Text
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Base64.URL as BSURL
 import Data.Semigroup (Endo (..))
@@ -50,7 +51,14 @@ import Network.HTTP.Req
 --import Debug.Trace (trace)
 import Text.XML.HXT.DOM.Util (uncurry3)
 
-import Pageparsers (imageLinks, imagePageFilenameTags, posts, threadsInCatalog)
+import Pageparsers
+    ( imageLinks
+    , imagePageFilenameTags
+    , posts
+    , threadsInCatalog
+    , postsInThread
+    , Post
+    )
 import FSMemoize (fsmemoize)
 
 -- login page (new): https://leftypol.booru.org/index.php?page=login
@@ -102,8 +110,11 @@ delete_post_params i
     <> "removepost" =: (1 :: Int)
             -- ./public/remove.php?id=11204&amp;removepost=1
 
+bunkerchan_root :: Url 'Http
+bunkerchan_root = http "127.0.0.1"
+
 bunkerchan_leftypol_catalog :: Url 'Http
-bunkerchan_leftypol_catalog = http "127.0.0.1" /: "leftypol" /: "catalog.html"
+bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
 
 fetchPageDataU :: Url scheme -> Option scheme -> IO ByteString
 fetchPageDataU url params = runReq defaultHttpConfig $ do
@@ -210,11 +221,23 @@ fetchPostsFromBunkerCatalogPage url params =
     where
         process rawdoc = do
             print $ renderParams params
-            putStrLn "threads on this catalog:"
+            putStrLn "threads on this catalog page:"
             threadPaths <- threadsInCatalog rawdoc
             mapM_ putStrLn threadPaths
-            putStrLn ""
             return threadPaths
+
+fetchBunkerchanPostPage :: Url a -> Option a -> IO [ Post ]
+fetchBunkerchanPostPage url params =
+    fetchAndProcessPageDataU process url params
+
+    where
+        process rawdoc = do
+            --print $ renderParams params
+            putStrLn "posts in this thread:"
+            -- print rawdoc
+            postss <- postsInThread rawdoc
+            mapM_ print postss
+            return postss
 
 login_ :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
 login_ url params payload = runReq defaultHttpConfig $
@@ -445,11 +468,22 @@ main :: IO ()
 main = do
     putStrLn "Hello World"
 
-    _<- fetchPostsFromBunkerCatalogPage
+    threadPaths <- fetchPostsFromBunkerCatalogPage
             bunkerchan_leftypol_catalog
             (port 8080)
 
+    _ <-
+        ( mapM
+            (((flip fetchBunkerchanPostPage) (port 8080)) . mkBunkerchanThreadUrl)
+            (map (Data.Text.pack . (drop 1)) threadPaths)
+        ) :: IO [[ Post ]]
+
     putStrLn "Done"
+
+    where
+        mkBunkerchanThreadUrl = (foldl (/:) bunkerchan_root) . (Data.Text.splitOn "/")
+        --mkBunkerchanThreadUrl = (/:) bunkerchan_root
+
 
 
 mkTagUpdatePostParams

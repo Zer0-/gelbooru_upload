@@ -1,10 +1,12 @@
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, Arrows #-}
 
 module Pageparsers
     ( imageLinks
     , imagePageFilenameTags
     , posts
     , threadsInCatalog
+    , postsInThread
+    , Post
     ) where
 
 import Text.XML.HXT.Core
@@ -15,9 +17,13 @@ import Text.XML.HXT.Core
     , yes
     , no
     , (>>>)
+    , (&&&)
     , getAttrValue
     , getText
     , getChildren
+    , returnA
+    , withDefault
+    , arr
     )
 import Data.Text (unpack, pack)
 import Text.URI (mkURI, URI)
@@ -40,9 +46,42 @@ parseURIs = flatten . (map f)
         f = mkURI . pack . ((++) "https://")
 
 
-type Doc = IOSLA (XIOState ()) XmlTree XmlTree
+type Doc a = IOSLA (XIOState ()) XmlTree a
 
-mkdoc :: ByteString -> Doc
+data Attachment = Attachment
+    { filename :: String
+    , url :: String
+    } deriving Show
+
+data PostPart
+    = SimpleText String
+    | PostedUrl String
+    | Skip
+    | Quote String
+        -- Quotes don't seem to be able to be spoilered
+        -- board links (which appear as quotes but start with >>>) break the tag
+    | GreenText String
+    | OrangeText String
+    | RedText String
+    | Spoiler PostPart
+    -- you can't seem to spoiler greentext
+    | Bold String
+    | Underlined String
+    | Italics String
+    | Strikethrough String
+    deriving Show
+
+data Post = Post
+    { attachments :: [ Attachment ]
+    , subject :: Maybe String
+    , email :: Maybe String
+    , name :: Maybe String
+    , post :: [ PostPart ]
+    } deriving Show
+
+--data Post = Post { subject :: Maybe String } deriving Show
+
+mkdoc :: ByteString -> Doc XmlTree
 mkdoc
     = (readString [ withParseHTML yes, withWarnings no])
     . (unpack . decodeUtf8)
@@ -57,14 +96,53 @@ imageLinks rawdoc = do
 
 imagePageFilenameTags :: ByteString -> IO (String, [ String ])
 imagePageFilenameTags rawdoc = do
-    filename <- runX $ mkdoc rawdoc >>> css "#image" >>> getAttrValue "src"
+    fname <- runX $ mkdoc rawdoc >>> css "#image" >>> getAttrValue "src"
     tags <- runX $ mkdoc rawdoc >>> css "#tag_list > ul > li > span > a" >>> getChildren >>> getText
 
-    return (head filename, tags)
+    return (head fname, tags)
 
+{- Bunkerchan -}
 threadsInCatalog :: ByteString -> IO [ String ]
 threadsInCatalog rawdoc =
     runX $ mkdoc rawdoc >>> css "#divThreads > .catalogCell > .linkThumb" >>> getAttrValue "href"
+
+
+{- Bunkerchan -}
+{-
+parsePost :: Doc Post
+parsePost = arrL undefined
+-}
+
+parsePost :: Doc String
+parsePost = css ".labelSubject" >>> getChildren >>> getText
+
+{-
+parseOP :: Doc String
+parseOP = css ".opHead .labelSubject" >>> getChildren >>> getText
+-}
+
+parseOP :: Doc Post
+parseOP = css ".opHead" >>>
+    proc l -> do
+        subject <- withDefault get_subject Nothing -< l
+        returnA -< Post
+            { attachments = []
+            , subject = subject
+            , email = Nothing
+            , name = Nothing
+            , post = []
+            }
+
+    where
+        get_subject = css ".labelSubject" >>> getChildren >>> getText >>> arr Just
+--getChildren >>> getText
+
+{- Bunkerchan -}
+postsInThread :: ByteString -> IO [ Post ]
+postsInThread rawdoc = do
+    parsedOpStuff <- runX $ mkdoc rawdoc >>> parseOP
+
+    return $ parsedOpStuff
 
 posts :: ByteString -> IO [ (Int, String) ]
 posts rawdoc = do
