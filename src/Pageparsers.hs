@@ -26,6 +26,10 @@ import Text.XML.HXT.Core
     , arr
     , listA
     )
+import qualified Data.Tree.Class as Tree
+import Data.Tree.NTree.TypeDefs (NTree (..), NTrees)
+import Text.XML.HXT.DOM.TypeDefs (XNode (..))
+import Text.XML.HXT.DOM.QualifiedName (qualifiedName)
 import Data.Text (unpack, pack)
 import Text.URI (mkURI, URI)
 import Data.ByteString (ByteString)
@@ -64,12 +68,12 @@ data PostPart
     | GreenText String
     | OrangeText String
     | RedText String
-    | Spoiler PostPart
+    | Spoiler       [ PostPart ]
     -- you can't seem to spoiler greentext
-    | Bold String
-    | Underlined String
-    | Italics String
-    | Strikethrough String
+    | Bold          [ PostPart ]
+    | Underlined    [ PostPart ]
+    | Italics       [ PostPart ]
+    | Strikethrough [ PostPart ]
     deriving Show
 
 data Post = Post
@@ -77,6 +81,7 @@ data Post = Post
     , subject :: Maybe String
     , email :: Maybe String
     , name :: String
+    , postNumber :: Int
     , post :: [ PostPart ]
     } deriving Show
 
@@ -108,6 +113,53 @@ threadsInCatalog rawdoc =
     runX $ mkdoc rawdoc >>> css "#divThreads > .catalogCell > .linkThumb" >>> getAttrValue "href"
 
 
+         -- XmlTrees
+xGetText :: NTrees XNode -> [ String ]
+xGetText = flatten . (map asdf)
+    where
+        asdf (NTree (XText s) _) = Just s
+        asdf _ = Nothing
+
+xGetAttr :: String -> NTrees XNode -> [ String ]
+xGetAttr s = foldl asdf []
+    where
+        asdf l (NTree (XAttr qn) xs) =
+            if qualifiedName qn == s
+            then l ++ (xGetText xs)
+            else l
+        asdf l _ = l
+
+postPartFromXmlTree :: XmlTree -> PostPart
+postPartFromXmlTree (NTree (XText s) _) = SimpleText s
+postPartFromXmlTree (NTree (XTag qn xs) c)
+    | qualifiedName qn == "a" && elem "quoteLink" (xGetAttr "class" xs) =
+        Quote $ head (xGetText c)
+    | qualifiedName qn == "a" && elem "_blank" (xGetAttr "target" xs) =
+        PostedUrl $ head (xGetAttr "href" xs)
+    | qualifiedName qn == "a" = Quote $ head (xGetText c)
+    | qualifiedName qn == "span" && elem "greenText" (xGetAttr "class" xs) =
+        GreenText $ head (xGetText c)
+    | qualifiedName qn == "span" && elem "orangeText" (xGetAttr "class" xs) =
+        OrangeText $ head (xGetText c)
+    | qualifiedName qn == "span" && elem "redText" (xGetAttr "class" xs) =
+        RedText $ head (xGetText c)
+    | qualifiedName qn == "span" && elem "spoiler" (xGetAttr "class" xs) =
+        Spoiler $ map postPartFromXmlTree c
+    | qualifiedName qn == "em" = Italics $ map postPartFromXmlTree c
+    | qualifiedName qn == "strong" = Bold $ map postPartFromXmlTree c
+    | qualifiedName qn == "u" = Underlined $ map postPartFromXmlTree c
+    | qualifiedName qn == "s" = Strikethrough $ map postPartFromXmlTree c
+    | otherwise = Skip
+--postPartFromXmlTree (NTree (XTag qn xs) c) = Quote $ (qualifiedName qn) ++ "|" ++ show xs ++ "|" ++ head (xGetText c)
+postPartFromXmlTree _ = Skip
+
+postPartsFromXmlTree :: XmlTree -> [ PostPart ]
+postPartsFromXmlTree t = map postPartFromXmlTree (Tree.getChildren t)
+
+parseBody :: Doc [ PostPart ]
+parseBody = arr postPartsFromXmlTree
+
+
 {- Bunkerchan -}
 parsePost :: Doc Post
 parsePost =
@@ -115,38 +167,46 @@ parsePost =
         subjectField <- withDefault getSubject Nothing -< l
         nameField <- getName -< l
         emailField <- withDefault getEmail Nothing -< l
+        postNumberField <- css "a.linkQuote" >>> getChildren >>> getText -< l
+        postParts <- withDefault getBody [] -< l
 
         returnA -< Post
             { attachments = []
             , subject = subjectField
             , email = emailField
             , name = nameField
-            , post = []
+            , postNumber = read postNumberField
+            , post = postParts
             }
 
     where
         getSubject = css ".labelSubject" >>> getChildren >>> getText >>> arr Just
         getName = css "a.linkName" >>> getChildren >>> getText
+
         getEmail
             = css "a.linkName"
             >>> hasAttr "href"
             >>> getAttrValue "href"
             >>> arr (Just . extractEmail)
+
+        getBody = css ".divMessage" >>> parseBody
+
         extractEmail = drop (length "mailto:")
 
 --getChildren >>> getText
 
 {- Bunkerchan -}
 postsInThread :: ByteString -> IO [ Post ]
-postsInThread rawdoc = do
-    allPosts <- runX $
+postsInThread rawdoc =
+    (runX $
         mkdoc rawdoc >>> proc l ->
                 do
                     op <- css ".opHead" >>> parsePost -< l
                     ps <- listA getPosts -< l
-                    returnA -< (op, ps)
+                    returnA -< op : ps
 
-    return $ (\(op, xs) -> op : xs) (head allPosts)
+    )
+    >>= return . head
 
     where
         getPosts = css ".postCell > div" >>> parsePost
