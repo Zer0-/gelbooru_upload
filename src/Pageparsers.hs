@@ -17,6 +17,7 @@ import Text.XML.HXT.Core
     , yes
     , no
     , (>>>)
+    , (&&&)
     , getAttrValue
     , getText
     , getChildren
@@ -169,9 +170,10 @@ parsePost =
         emailField <- withDefault getEmail Nothing -< l
         postNumberField <- css "a.linkQuote" >>> getChildren >>> getText -< l
         postParts <- withDefault getBody [] -< l
+        attachmentUrls <- withDefault (listA getAttachments) [] -< l
 
         returnA -< Post
-            { attachments = []
+            { attachments = map (\(f, u) -> Attachment f u) attachmentUrls
             , subject = subjectField
             , email = emailField
             , name = nameField
@@ -193,6 +195,12 @@ parsePost =
 
         extractEmail = drop (length "mailto:")
 
+        getAttachments
+            = css ".originalNameLink"
+            >>> ( ( getChildren >>> getText )
+                &&& (getAttrValue "href")
+                )
+
 --getChildren >>> getText
 
 {- Bunkerchan -}
@@ -201,7 +209,7 @@ postsInThread rawdoc =
     (runX $
         mkdoc rawdoc >>> proc l ->
                 do
-                    op <- css ".opHead" >>> parsePost -< l
+                    op <- css ".innerOP" >>> parsePost -< l
                     ps <- listA getPosts -< l
                     returnA -< op : ps
 

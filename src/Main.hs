@@ -224,6 +224,7 @@ fetchPostsFromBunkerCatalogPage url params =
             putStrLn "threads on this catalog page:"
             threadPaths <- threadsInCatalog rawdoc
             mapM_ putStrLn threadPaths
+            putStrLn ""
             return threadPaths
 
 fetchBunkerchanPostPage :: Url a -> Option a -> IO [ Post ]
@@ -237,6 +238,7 @@ fetchBunkerchanPostPage url params =
             -- print rawdoc
             postss <- postsInThread rawdoc
             mapM_ print postss
+            putStrLn ""
             return postss
 
 login_ :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
