@@ -112,21 +112,27 @@ delete_post_params i
             -- ./public/remove.php?id=11204&amp;removepost=1
 
 bunkerchan_root :: Url 'Http
-bunkerchan_root = http "127.0.0.1"
+bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
 
 bunkerchan_leftypol_catalog :: Url 'Http
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
 
 fetchPageDataU :: Url scheme -> Option scheme -> IO ByteString
-fetchPageDataU url params = runReq defaultHttpConfig $ do
-    r <- req
-        GET
-        url
-        NoReqBody
-        bsResponse
-        params
+fetchPageDataU url params = do
+    putStrLn $
+        "[GET]"
+        ++ show url
+        ++ (BS.unpack $ renderParams params)
 
-    liftIO $ return $ responseBody r
+    runReq defaultHttpConfig $ do
+        r <- req
+            GET
+            url
+            NoReqBody
+            bsResponse
+            params
+
+        liftIO $ return $ responseBody r
 
 getRawPageBody :: FilePath -> Url scheme -> Option scheme -> IO ByteString
 getRawPageBody datadir url params =
@@ -183,11 +189,6 @@ fetchAndProcessPageDataU process url params = do
     rawdoc <- fetchPageDataU
             url
             params
-
-    putStrLn $
-        "[GET]"
-        ++ show url
-        ++ (BS.unpack $ renderParams params)
 
     process rawdoc
 
@@ -475,14 +476,29 @@ main_old = do
         --[head $ parseFileList tagsdata]
 
 
-processThread :: [ Post ] -> IO ()
-processThread = print . fileUrls
+processThread :: String -> [ Post ] -> IO ()
+processThread datadir posts2 = do
+    print $ fileUrlStrs posts2
+
+    mapM_
+        ( \u -> return
+            ( u
+            , ((flip (getRawPageBody datadir)) (port 8080))
+            )
+        )
+        -- bunkerchan image urls are relative
+        (map (mkUrl bunkerchan_root) (fileUrls posts2))
+
     where
-        fileUrls = (=<<) attachmentsInPost
+        fileUrlStrs = (=<<) attachmentsInPost
+
+        fileUrls = (map (Data.Text.pack . (drop 1))) . fileUrlStrs
 
         attachmentsInPost :: Post -> [ String ]
         attachmentsInPost (Post { attachments }) = map attachmentUrl attachments
 
+mkUrl :: Url 'Http -> Data.Text.Text -> Url 'Http
+mkUrl root = (foldl (/:) root) . (Data.Text.splitOn "/")
 
 main :: IO ()
 main = do
@@ -491,7 +507,7 @@ main = do
     args <- getArgs
     let datadir = head args
 
-    putStrLn datadir
+    putStrLn $ "datadir: " ++ datadir
 
     threadPaths <- fetchPostsFromBunkerCatalogPage
             bunkerchan_leftypol_catalog
@@ -499,19 +515,14 @@ main = do
 
     posts2 <-
         ( mapM
-            (((flip fetchBunkerchanPostPage) (port 8080)) . mkBunkerchanThreadUrl)
+            (((flip fetchBunkerchanPostPage) (port 8080)) . (mkUrl bunkerchan_root))
             (map (Data.Text.pack . (drop 1)) threadPaths)
         ) :: IO [[ Post ]]
 
     -- mapM_ ((flip (getRawPageBody undefined)) (port 8080)) (
-    mapM_ processThread posts2
+    mapM_ (processThread datadir) posts2
 
     putStrLn "Done"
-
-    where
-        mkBunkerchanThreadUrl = (foldl (/:) bunkerchan_root) . (Data.Text.splitOn "/")
-        --mkBunkerchanThreadUrl = (/:) bunkerchan_root
-
 
 
 mkTagUpdatePostParams

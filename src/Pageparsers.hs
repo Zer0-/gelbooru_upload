@@ -6,6 +6,7 @@ module Pageparsers
     , posts
     , threadsInCatalog
     , postsInThread
+    , flatten
     , Post (..)
     , Attachment (..)
     ) where
