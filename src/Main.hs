@@ -1,4 +1,7 @@
 {-# LANGUAGE OverloadedStrings, DataKinds, NamedFieldPuns #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+-- There is an orphan instance of CookieJar which we need to not login every request
+-- I don't consider this a hack, CookieJar should derive something like this already
 
 module Main where
 
@@ -13,6 +16,7 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Base64.URL as BSURL
 import Data.Semigroup (Endo (..))
 import Control.Monad.IO.Class (liftIO)
+import Data.Serialize (Serialize (..))
 import qualified Crypto.Hash.MD5 as MD5
 import Network.HTTP.Client (defaultRequest, CookieJar)
 import Network.HTTP.Types (renderQuery, queryTextToQuery)
@@ -39,6 +43,7 @@ import Network.HTTP.Req
     , bsResponse
     , ignoreResponse
     , responseBody
+    , responseHeader
     , responseStatusCode
     , responseCookieJar
     , cookieJar
@@ -61,6 +66,10 @@ import Pageparsers
     , Attachment (..)
     )
 import FSMemoize (fsmemoize)
+
+instance Serialize CookieJar where
+    put c = put $ show c
+    get = get >>= return . read
 
 -- login page (new): https://leftypol.booru.org/index.php?page=login
 -- posts page (old): https://lefty.booru.org/index.php?page=post&s=list&tags=all&pid=0
@@ -120,8 +129,8 @@ bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
 bunkerchan_leftypol_catalog :: Url 'Http
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
 
-fetchPageDataU :: Url scheme -> Option scheme -> IO ByteString
-fetchPageDataU url params = do
+httpGet :: Url scheme -> Option scheme -> IO (Maybe String, ByteString)
+httpGet url params = do
     putStrLn $
         "[GET]"
         ++ show url
@@ -135,15 +144,22 @@ fetchPageDataU url params = do
             bsResponse
             params
 
-        liftIO $ return $ responseBody r
+        liftIO $ return $
+            ( responseHeader r "Content-Type" >>= return . BS.unpack
+            , responseBody r
+            )
 
-getRawPageBody :: FilePath -> Url scheme -> Option scheme -> IO ByteString
-getRawPageBody datadir url params =
+cachedGet :: FilePath -> Url scheme -> Option scheme -> IO (Maybe String, ByteString)
+cachedGet datadir url params =
     fsmemoize
         datadir
         (uncurry hashUrl)
-        (uncurry fetchPageDataU)
+        (uncurry httpGet)
         (url, params)
+
+getRawPageBody :: FilePath -> Url scheme -> Option scheme -> IO (Maybe String, ByteString)
+getRawPageBody = cachedGet
+
 
 renderParams :: Option scheme -> ByteString
 renderParams (Option f _) = renderQuery True (queryTextToQuery params)
@@ -170,7 +186,7 @@ fetchPageData
     -> Option scheme
     -> IO a
 fetchPageData datadir process url params = do
-    rawdoc <- getRawPageBody
+    (_, rawdoc) <- getRawPageBody
             datadir
             url
             params
@@ -189,7 +205,7 @@ fetchAndProcessPageDataU
     -> Option scheme
     -> IO a
 fetchAndProcessPageDataU process url params = do
-    rawdoc <- fetchPageDataU
+    (_, rawdoc) <- httpGet
             url
             params
 
@@ -481,12 +497,29 @@ main_old = do
 
 processThread :: String -> [ Post ] -> IO ()
 processThread datadir posts2 = do
-    print $ fileUrlStrs posts2
+    saved <- mapM
+        ( \a ->
+            let u = mkBnkrUrl $ prepareUrlStr $ attachmentUrl a
+            in
+                (getFn u)
+                >>= \r -> return (a, u, r)
+        )
+        (posts2 >>= attachments)
 
+    mapM_ (\(a, u, (b, _)) -> print (a, u, b)) saved
+
+    where
+        getFn = (flip (cachedGet datadir)) (port bunkerchan_port)
+
+        mkBnkrUrl = mkUrl bunkerchan_root
+
+        prepareUrlStr = Data.Text.pack . (drop 1)
+
+{-
     mapM_
         ( \u -> return
             ( u
-            , ((flip (getRawPageBody datadir)) (port bunkerchan_port))
+            , ((flip (cachedGet datadir)) (port bunkerchan_port))
             )
         )
         -- bunkerchan image urls are relative
@@ -499,14 +532,13 @@ processThread datadir posts2 = do
 
         attachmentsInPost :: Post -> [ String ]
         attachmentsInPost (Post { attachments }) = map attachmentUrl attachments
+-}
 
 mkUrl :: Url 'Http -> Data.Text.Text -> Url 'Http
 mkUrl root = (foldl (/:) root) . (Data.Text.splitOn "/")
 
 main :: IO ()
 main = do
-    putStrLn "Hello World"
-
     args <- getArgs
     let datadir = head args
 
