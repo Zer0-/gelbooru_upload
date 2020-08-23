@@ -111,6 +111,9 @@ delete_post_params i
     <> "removepost" =: (1 :: Int)
             -- ./public/remove.php?id=11204&amp;removepost=1
 
+bunkerchan_port :: Int
+bunkerchan_port = 8080
+
 bunkerchan_root :: Url 'Http
 bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
 
@@ -483,7 +486,7 @@ processThread datadir posts2 = do
     mapM_
         ( \u -> return
             ( u
-            , ((flip (getRawPageBody datadir)) (port 8080))
+            , ((flip (getRawPageBody datadir)) (port bunkerchan_port))
             )
         )
         -- bunkerchan image urls are relative
@@ -511,15 +514,14 @@ main = do
 
     threadPaths <- fetchPostsFromBunkerCatalogPage
             bunkerchan_leftypol_catalog
-            (port 8080)
+            (port bunkerchan_port)
 
     posts2 <-
         ( mapM
-            (((flip fetchBunkerchanPostPage) (port 8080)) . (mkUrl bunkerchan_root))
+            (((flip fetchBunkerchanPostPage) (port bunkerchan_port)) . (mkUrl bunkerchan_root))
             (map (Data.Text.pack . (drop 1)) threadPaths)
         ) :: IO [[ Post ]]
 
-    -- mapM_ ((flip (getRawPageBody undefined)) (port 8080)) (
     mapM_ (processThread datadir) posts2
 
     putStrLn "Done"
