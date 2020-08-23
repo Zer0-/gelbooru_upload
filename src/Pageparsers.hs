@@ -6,7 +6,8 @@ module Pageparsers
     , posts
     , threadsInCatalog
     , postsInThread
-    , Post
+    , Post (..)
+    , Attachment (..)
     ) where
 
 import Text.XML.HXT.Core
@@ -55,8 +56,8 @@ parseURIs = flatten . (map f)
 type Doc a = IOSLA (XIOState ()) XmlTree a
 
 data Attachment = Attachment
-    { filename :: String
-    , url :: String
+    { attachmentfilename :: String
+    , attachmentUrl :: String
     } deriving Show
 
 data PostPart
@@ -83,7 +84,7 @@ data Post = Post
     , email :: Maybe String
     , name :: String
     , postNumber :: Int
-    , post :: [ PostPart ]
+    , postBody :: [ PostPart ]
     } deriving Show
 
 --data Post = Post { subject :: Maybe String } deriving Show
@@ -178,7 +179,7 @@ parsePost =
             , email = emailField
             , name = nameField
             , postNumber = read postNumberField
-            , post = postParts
+            , postBody = postParts
             }
 
     where

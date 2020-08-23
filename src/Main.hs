@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, DataKinds #-}
+{-# LANGUAGE OverloadedStrings, DataKinds, NamedFieldPuns #-}
 
 module Main where
 
@@ -57,7 +57,8 @@ import Pageparsers
     , posts
     , threadsInCatalog
     , postsInThread
-    , Post
+    , Post (..)
+    , Attachment (..)
     )
 import FSMemoize (fsmemoize)
 
@@ -417,6 +418,14 @@ parseMimeFile
     . (drop 1)
     . lines
 
+{-
+ - TODO:
+ -      - get memoized file data
+ -      - post on lainchan
+ -          - PostPart -> String
+ -          - file upload (this should be working already hopefully)
+ -}
+
 main_old :: IO ()
 main_old = do
     args <- getArgs
@@ -466,19 +475,36 @@ main_old = do
         --[head $ parseFileList tagsdata]
 
 
+processThread :: [ Post ] -> IO ()
+processThread = print . fileUrls
+    where
+        fileUrls = (=<<) attachmentsInPost
+
+        attachmentsInPost :: Post -> [ String ]
+        attachmentsInPost (Post { attachments }) = map attachmentUrl attachments
+
+
 main :: IO ()
 main = do
     putStrLn "Hello World"
+
+    args <- getArgs
+    let datadir = head args
+
+    putStrLn datadir
 
     threadPaths <- fetchPostsFromBunkerCatalogPage
             bunkerchan_leftypol_catalog
             (port 8080)
 
-    _ <-
+    posts2 <-
         ( mapM
             (((flip fetchBunkerchanPostPage) (port 8080)) . mkBunkerchanThreadUrl)
             (map (Data.Text.pack . (drop 1)) threadPaths)
         ) :: IO [[ Post ]]
+
+    -- mapM_ ((flip (getRawPageBody undefined)) (port 8080)) (
+    mapM_ processThread posts2
 
     putStrLn "Done"
 
