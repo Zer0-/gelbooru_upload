@@ -61,6 +61,7 @@ import Pageparsers
     , imagePageFilenameTags
     , posts
     , threadsInCatalog
+    , lainchanFormParams
     , postsInThread
     , Post (..)
     , Attachment (..)
@@ -70,6 +71,8 @@ import FSMemoize (fsmemoize)
 instance Serialize CookieJar where
     put c = put $ show c
     get = get >>= return . read
+
+type PostWithAttachments = (Post, [ (Url 'Http, Maybe String, ByteString) ])
 
 -- login page (new): https://leftypol.booru.org/index.php?page=login
 -- posts page (old): https://lefty.booru.org/index.php?page=post&s=list&tags=all&pid=0
@@ -91,6 +94,9 @@ new_booru_base_url_plaintext = http "leftypol.booru.org" /: "index.php"
 
 new_booru_delete_url :: Url 'Https
 new_booru_delete_url = https "leftypol.booru.org" /: "public" /: "remove.php"
+
+lainchan_b :: Url 'Http
+lainchan_b = http "167.99.9.53" /: "b" /: "index.html"
 
 booru_base_params :: Option 'Https
 booru_base_params
@@ -261,6 +267,19 @@ fetchBunkerchanPostPage url params =
             mapM_ print postss
             putStrLn ""
             return postss
+
+fetchLainchanFormPage :: Url a -> Option a -> IO [ String ]
+fetchLainchanFormPage url params =
+    fetchAndProcessPageDataU process url params
+
+    where
+        process rawdoc = do
+            print $ renderParams params
+            putStrLn "parameters on this login page:"
+            existingParams <- lainchanFormParams rawdoc
+            mapM_ putStrLn existingParams
+            putStrLn ""
+            return existingParams
 
 login_ :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
 login_ url params payload = runReq defaultHttpConfig $
@@ -444,6 +463,9 @@ parseMimeFile
  -      - post on lainchan
  -          - PostPart -> String
  -          - file upload (this should be working already hopefully)
+ -
+ -      - GET board page from lainchan (to post op)
+ -      - parse parameters
  -}
 
 main_old :: IO ()
@@ -495,18 +517,18 @@ main_old = do
         --[head $ parseFileList tagsdata]
 
 
-processThread :: String -> [ Post ] -> IO ()
-processThread datadir posts2 = do
+fetchAttachments :: String ->  Post -> IO PostWithAttachments
+fetchAttachments datadir post2 = do
     saved <- mapM
         ( \a ->
             let u = mkBnkrUrl $ prepareUrlStr $ attachmentUrl a
             in
                 (getFn u)
-                >>= \r -> return (a, u, r)
+                >>= \(m, b) -> return (u, m, b)
         )
-        (posts2 >>= attachments)
+        (attachments post2)
 
-    mapM_ (\(a, u, (b, _)) -> print (a, u, b)) saved
+    return (post2, saved)
 
     where
         getFn = (flip (cachedGet datadir)) (port bunkerchan_port)
@@ -515,24 +537,23 @@ processThread datadir posts2 = do
 
         prepareUrlStr = Data.Text.pack . (drop 1)
 
-{-
-    mapM_
-        ( \u -> return
-            ( u
-            , ((flip (cachedGet datadir)) (port bunkerchan_port))
-            )
-        )
-        -- bunkerchan image urls are relative
-        (map (mkUrl bunkerchan_root) (fileUrls posts2))
 
-    where
-        fileUrlStrs = (=<<) attachmentsInPost
+processThread :: String -> [ Post ] -> IO ()
+processThread datadir thread = do
+    posts2 <- mapM (fetchAttachments datadir) thread
 
-        fileUrls = (map (Data.Text.pack . (drop 1))) . fileUrlStrs
+    mapM_ (\(p, xs) -> do
+        print (postNumber p)
+        mapM_ (\(u, m, _) -> putStrLn $ " " ++ show (u, m)) xs
+        putStrLn "")
+        posts2
 
-        attachmentsInPost :: Post -> [ String ]
-        attachmentsInPost (Post { attachments }) = map attachmentUrl attachments
--}
+    _ <- fetchLainchanFormPage
+        lainchan_b
+        mempty
+
+    putStrLn "Hello World"
+
 
 mkUrl :: Url 'Http -> Data.Text.Text -> Url 'Http
 mkUrl root = (foldl (/:) root) . (Data.Text.splitOn "/")

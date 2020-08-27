@@ -5,6 +5,7 @@ module Pageparsers
     , imagePageFilenameTags
     , posts
     , threadsInCatalog
+    , lainchanFormParams
     , postsInThread
     , flatten
     , Post (..)
@@ -109,6 +110,9 @@ imagePageFilenameTags rawdoc = do
     tags <- runX $ mkdoc rawdoc >>> css "#tag_list > ul > li > span > a" >>> getChildren >>> getText
 
     return (head fname, tags)
+
+lainchanFormParams :: ByteString -> IO [ String ]
+lainchanFormParams = undefined
 
 {- Bunkerchan -}
 threadsInCatalog :: ByteString -> IO [ String ]
