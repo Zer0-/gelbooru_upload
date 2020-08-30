@@ -47,7 +47,7 @@ import Network.HTTP.Req
     , FormUrlEncodedParam
     , https
     , http
-    , port
+    --, port
     , bsResponse
     , ignoreResponse
     , responseBody
@@ -147,8 +147,9 @@ delete_post_params i
     <> "removepost" =: (1 :: Int)
             -- ./public/remove.php?id=11204&amp;removepost=1
 
-bunkerchan_port :: Int
-bunkerchan_port = 80
+bunkerchan_port :: Option scheme
+-- bunkerchan_port = port 8080
+bunkerchan_port = mempty
 
 -- bunkerchan_root :: Url 'Http
 -- bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
@@ -655,7 +656,7 @@ fetchAttachments datadir post2 = do
     return (post2, saved)
 
     where
-        getFn = (flip (cachedGet datadir)) (port bunkerchan_port)
+        getFn = (flip (cachedGet datadir)) bunkerchan_port
 
         mkBnkrUrl = mkUrl bunkerchan_root
 
@@ -743,11 +744,11 @@ main = do
 
     threadPaths <- fetchPostsFromBunkerCatalogPage
             bunkerchan_leftypol_catalog
-            (port bunkerchan_port)
+            bunkerchan_port
 
     posts2 <-
         ( mapM
-            (((flip fetchBunkerchanPostPage) (port bunkerchan_port)) . (mkUrl bunkerchan_root))
+            (((flip fetchBunkerchanPostPage) bunkerchan_port) . (mkUrl bunkerchan_root))
             (map (Text.pack . (drop 1)) threadPaths)
         ) :: IO [[ Post ]]
 
