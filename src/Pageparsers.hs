@@ -9,7 +9,9 @@ module Pageparsers
     , postsInThread
     , flatten
     , Post (..)
+    , PostPart (..)
     , Attachment (..)
+    , FormField (..)
     ) where
 
 import Text.XML.HXT.Core
@@ -58,7 +60,7 @@ parseURIs = flatten . (map f)
 type Doc a = IOSLA (XIOState ()) XmlTree a
 
 data Attachment = Attachment
-    { attachmentfilename :: String
+    { attachmentFilename :: String
     , attachmentUrl :: String
     } deriving Show
 
@@ -69,9 +71,9 @@ data PostPart
     | Quote String
         -- Quotes don't seem to be able to be spoilered
         -- board links (which appear as quotes but start with >>>) break the tag
-    | GreenText String
-    | OrangeText String
-    | RedText String
+    | GreenText     [ PostPart ]
+    | OrangeText    [ PostPart ]
+    | RedText       [ PostPart ]
     | Spoiler       [ PostPart ]
     -- you can't seem to spoiler greentext
     | Bold          [ PostPart ]
@@ -89,7 +91,11 @@ data Post = Post
     , postBody :: [ PostPart ]
     } deriving Show
 
---data Post = Post { subject :: Maybe String } deriving Show
+
+data FormField = FormField
+    { fieldName :: String
+    , fieldValue :: String
+    } deriving Show
 
 mkdoc :: ByteString -> Doc XmlTree
 mkdoc
@@ -111,8 +117,39 @@ imagePageFilenameTags rawdoc = do
 
     return (head fname, tags)
 
-lainchanFormParams :: ByteString -> IO [ String ]
-lainchanFormParams = undefined
+lainchanFormParams :: ByteString -> IO [ FormField ]
+lainchanFormParams rawdoc = do
+    as <- runX $ mkdoc rawdoc
+        >>> css "form[name=post] input"
+        >>> parseFormField
+
+    bs <- runX $ mkdoc rawdoc
+        >>> css "form[name=post] textarea"
+        >>> parseTextAreaFormField
+
+    return $ as ++ bs
+
+parseFormField :: Doc FormField
+parseFormField =
+    proc l -> do
+        nameField <- getAttrValue "name" -< l
+        valueField <- getAttrValue "value" -< l
+
+        returnA -< FormField
+            { fieldName = nameField
+            , fieldValue = valueField
+            }
+
+parseTextAreaFormField :: Doc FormField
+parseTextAreaFormField =
+    proc l -> do
+        nameField <- getAttrValue "name" -< l
+        valueField <- withDefault (getChildren >>> getText) "" -< l
+
+        returnA -< FormField
+            { fieldName = nameField
+            , fieldValue = valueField
+            }
 
 {- Bunkerchan -}
 threadsInCatalog :: ByteString -> IO [ String ]
@@ -139,19 +176,19 @@ xGetAttr s = foldl asdf []
 postPartFromXmlTree :: XmlTree -> PostPart
 postPartFromXmlTree (NTree (XText s) _) = SimpleText s
 postPartFromXmlTree (NTree (XTag qn xs) c)
-    | qualifiedName qn == "a" && elem "quoteLink" (xGetAttr "class" xs) =
-        Quote $ head (xGetText c)
-    | qualifiedName qn == "a" && elem "_blank" (xGetAttr "target" xs) =
-        PostedUrl $ head (xGetAttr "href" xs)
+    | qualifiedName qn == "a" && elem "quoteLink" (xGetAttr "class" xs)
+        = Quote $ head (xGetText c)
+    | qualifiedName qn == "a" && elem "_blank" (xGetAttr "target" xs)
+        = PostedUrl $ head (xGetAttr "href" xs)
     | qualifiedName qn == "a" = Quote $ head (xGetText c)
-    | qualifiedName qn == "span" && elem "greenText" (xGetAttr "class" xs) =
-        GreenText $ head (xGetText c)
-    | qualifiedName qn == "span" && elem "orangeText" (xGetAttr "class" xs) =
-        OrangeText $ head (xGetText c)
-    | qualifiedName qn == "span" && elem "redText" (xGetAttr "class" xs) =
-        RedText $ head (xGetText c)
-    | qualifiedName qn == "span" && elem "spoiler" (xGetAttr "class" xs) =
-        Spoiler $ map postPartFromXmlTree c
+    | qualifiedName qn == "span" && elem "greenText" (xGetAttr "class" xs)
+        = GreenText $ map postPartFromXmlTree c
+    | qualifiedName qn == "span" && elem "orangeText" (xGetAttr "class" xs)
+        = OrangeText $ map postPartFromXmlTree c
+    | qualifiedName qn == "span" && elem "redText" (xGetAttr "class" xs)
+        = RedText $ map postPartFromXmlTree c
+    | qualifiedName qn == "span" && elem "spoiler" (xGetAttr "class" xs)
+        = Spoiler $ map postPartFromXmlTree c
     | qualifiedName qn == "em" = Italics $ map postPartFromXmlTree c
     | qualifiedName qn == "strong" = Bold $ map postPartFromXmlTree c
     | qualifiedName qn == "u" = Underlined $ map postPartFromXmlTree c

@@ -11,19 +11,27 @@ import qualified Data.Map as Map
 import Data.ByteString (ByteString, empty)
 import Data.List (intercalate, sort)
 import Data.List.Split (splitWhen, splitOn)
-import qualified Data.Text
+import qualified Data.Text as Text
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Base64.URL as BSURL
 import Data.Semigroup (Endo (..))
+import Data.Maybe (fromMaybe)
+import Data.Text.Encoding (encodeUtf8)
 import Control.Monad.IO.Class (liftIO)
 import Data.Serialize (Serialize (..))
 import qualified Crypto.Hash.MD5 as MD5
-import Network.HTTP.Client (defaultRequest, CookieJar)
+import Network.HTTP.Client
+    ( defaultRequest
+    , CookieJar
+    , RequestBody (RequestBodyBS)
+    )
 import Network.HTTP.Types (renderQuery, queryTextToQuery)
 import Network.HTTP.Client.MultipartFormData
     ( partBS
     , partContentType
     , partFileSource
+    , partFileRequestBody
+    , Part
     )
 import Network.HTTP.Req
     ( runReq
@@ -47,6 +55,7 @@ import Network.HTTP.Req
     , responseStatusCode
     , responseCookieJar
     , cookieJar
+    , header
     , (=:) --query params
     , (/:)
     , Option (Option)
@@ -64,7 +73,9 @@ import Pageparsers
     , lainchanFormParams
     , postsInThread
     , Post (..)
+    , PostPart (..)
     , Attachment (..)
+    , FormField (..)
     )
 import FSMemoize (fsmemoize)
 
@@ -95,8 +106,17 @@ new_booru_base_url_plaintext = http "leftypol.booru.org" /: "index.php"
 new_booru_delete_url :: Url 'Https
 new_booru_delete_url = https "leftypol.booru.org" /: "public" /: "remove.php"
 
+lainchan_ip :: String
+lainchan_ip = "167.99.9.53"
+
+lainchan_base :: Url 'Http
+lainchan_base = http $ Text.pack lainchan_ip
+
 lainchan_b :: Url 'Http
-lainchan_b = http "167.99.9.53" /: "b" /: "index.html"
+lainchan_b = lainchan_base /: "b" /: "index.html"
+
+lainchan_post_url :: Url 'Http
+lainchan_post_url = lainchan_base/: "post.php"
 
 booru_base_params :: Option 'Https
 booru_base_params
@@ -134,6 +154,27 @@ bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
 
 bunkerchan_leftypol_catalog :: Url 'Http
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
+
+httpGetB :: Url scheme -> Option scheme -> IO (Maybe String, ByteString, CookieJar)
+httpGetB url params = do
+    putStrLn $
+        "[GET]"
+        ++ show url
+        ++ (BS.unpack $ renderParams params)
+
+    runReq defaultHttpConfig $ do
+        r <- req
+            GET
+            url
+            NoReqBody
+            bsResponse
+            params
+
+        liftIO $ return $
+            ( responseHeader r "Content-Type" >>= return . BS.unpack
+            , responseBody r
+            , responseCookieJar r
+            )
 
 httpGet :: Url scheme -> Option scheme -> IO (Maybe String, ByteString)
 httpGet url params = do
@@ -209,13 +250,15 @@ fetchAndProcessPageDataU
     :: (ByteString -> IO a)
     -> Url scheme
     -> Option scheme
-    -> IO a
+    -> IO (a, CookieJar)
 fetchAndProcessPageDataU process url params = do
-    (_, rawdoc) <- httpGet
+    (_, rawdoc, c) <- httpGetB
             url
             params
 
-    process rawdoc
+    result <- process rawdoc
+
+    return (result, c)
 
 fetchBooruPostPage
     :: String
@@ -243,7 +286,7 @@ fetchBooruImagePage datadir url params =
 
 fetchPostsFromBunkerCatalogPage :: Url a -> Option a -> IO [ String ]
 fetchPostsFromBunkerCatalogPage url params =
-    fetchAndProcessPageDataU process url params
+    fetchAndProcessPageDataU process url params >>= return . fst
 
     where
         process rawdoc = do
@@ -256,7 +299,7 @@ fetchPostsFromBunkerCatalogPage url params =
 
 fetchBunkerchanPostPage :: Url a -> Option a -> IO [ Post ]
 fetchBunkerchanPostPage url params =
-    fetchAndProcessPageDataU process url params
+    fetchAndProcessPageDataU process url params >>= return . fst
 
     where
         process rawdoc = do
@@ -268,8 +311,8 @@ fetchBunkerchanPostPage url params =
             putStrLn ""
             return postss
 
-fetchLainchanFormPage :: Url a -> Option a -> IO [ String ]
-fetchLainchanFormPage url params =
+fetchLainchanFormPage :: Url a -> Option a -> IO ([ FormField ], CookieJar)
+fetchLainchanFormPage url params = do
     fetchAndProcessPageDataU process url params
 
     where
@@ -277,9 +320,39 @@ fetchLainchanFormPage url params =
             print $ renderParams params
             putStrLn "parameters on this login page:"
             existingParams <- lainchanFormParams rawdoc
-            mapM_ putStrLn existingParams
-            putStrLn ""
+            --mapM_ putStrLn existingParams
             return existingParams
+
+postLainchan
+    :: Url a
+    -> Option a
+    -> PostWithAttachments
+    -> [ FormField ]
+    -> IO ByteString
+postLainchan u o ps ffs =
+    runReq defaultHttpConfig $ do
+        payload <- reqBodyMultipart $ defaultParams ++ (mkLainchanPostParams ps)
+
+        r <- req
+            POST
+            u
+            payload
+            bsResponse
+            o
+
+        case responseStatusCode r of
+            200 -> liftIO $ return $ responseBody r
+            e -> error $ "Upload failed! result code " ++ show e
+
+     where
+        defaultParams = map formFieldToParam (filter isDefault ffs)
+
+        isDefault (FormField { fieldName = "name" })    = False
+        isDefault (FormField { fieldName = "email" })   = False
+        isDefault (FormField { fieldName = "subject" }) = False
+        isDefault (FormField { fieldName = "body" })    = False
+        isDefault (FormField { fieldName = "file" })    = False
+        isDefault _ = True
 
 login_ :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
 login_ url params payload = runReq defaultHttpConfig $
@@ -306,6 +379,52 @@ mkloginParams username password
     =  "user" =: username
     <> "pass" =: password
     <> "submit" =: ("Log+in" :: String)
+
+mkLainchanPostParams :: PostWithAttachments -> [ Part ]
+mkLainchanPostParams (p, xs) =
+    (map (uncurry requestPartFromAttachment) (zip [0..] xs2)) ++
+    [ partBS "name" $ BS.pack (name p)
+    , partBS "email" $ BS.pack (fromMaybe "" $ email p)
+    , partBS "subject" $ BS.pack (fromMaybe "" $ subject p)
+    , partBS "body" $ BS.pack (renderPostBody $ postBody p)
+    ]
+
+     where
+        xs2 = map (\(a, (_, b, c)) -> (a, b, c)) (zip (attachments p) xs)
+
+formFieldToParam :: FormField -> Part
+formFieldToParam (FormField { fieldName, fieldValue }) =
+    partBS (Text.pack fieldName) $ encodeUtf8 $ Text.pack fieldValue
+
+renderPostBody :: [ PostPart ] -> String
+renderPostBody = ((=<<) :: (PostPart -> String) -> [ PostPart ] ->  String) renderPart
+    where
+        renderPart :: PostPart -> String
+        renderPart (SimpleText s) = s
+        renderPart (PostedUrl s) = s
+        renderPart Skip = ""
+        renderPart (Quote s) = s
+        renderPart (GreenText ps)     = ps >>= renderPart
+        renderPart (OrangeText ps)    = ps >>= renderPart
+        renderPart (RedText ps)       = ps >>= renderPart
+        renderPart (Spoiler ps)       = "[spoiler]" ++ (ps >>= renderPart) ++ "[/spoiler]"
+        renderPart (Bold ps)          = "[b]" ++ (ps >>= renderPart) ++ "[/b]"
+        renderPart (Underlined ps)    = "[b]" ++ (ps >>= renderPart) ++ "[/b]"
+        renderPart (Italics ps)       = "[i]" ++ (ps >>= renderPart) ++ "[/i]"
+        renderPart (Strikethrough ps) = "[i]" ++ (ps >>= renderPart) ++ "[/i]"
+
+requestPartFromAttachment :: Int -> (Attachment, Maybe String, ByteString) -> Part
+requestPartFromAttachment i (a, m, bs) =
+    ( partFileRequestBody
+        (fieldName i)
+        (attachmentFilename a)
+        (RequestBodyBS bs)
+    ) { partContentType = m >>= Just . BS.pack }
+
+    where
+        fieldName 0 = "file"
+        fieldName j = Text.pack $ "file" ++ show j
+
 
 mkPostParams
     :: Map.Map FilePath String
@@ -351,19 +470,20 @@ post_
     -> String
     -> [String]
     -> IO ByteString
-post_ mime url params imgdir cookies filename tags = runReq defaultHttpConfig $ do
-    payload <- mkPostParams mime imgdir filename tags
+post_ mime url params imgdir cookies filename tags =
+    runReq defaultHttpConfig $ do
+        payload <- mkPostParams mime imgdir filename tags
 
-    r <- req
-        POST
-        url
-        payload
-        bsResponse
-        (params <> cookieJar cookies)
+        r <- req
+            POST
+            url
+            payload
+            bsResponse
+            (params <> cookieJar cookies)
 
-    case responseStatusCode r of
-        200 -> liftIO $ return $ responseBody r
-        _ -> error "Upload failed"
+        case responseStatusCode r of
+            200 -> liftIO $ return $ responseBody r
+            e -> error $ "Upload failed! result code " ++ show e
 
 -- insane just make a data definition!
 -- why am i adding to this!!!
@@ -535,28 +655,50 @@ fetchAttachments datadir post2 = do
 
         mkBnkrUrl = mkUrl bunkerchan_root
 
-        prepareUrlStr = Data.Text.pack . (drop 1)
+        prepareUrlStr = Text.pack . (drop 1)
 
+optFromFormField :: FormField -> Option a
+optFromFormField = undefined
 
 processThread :: String -> [ Post ] -> IO ()
 processThread datadir thread = do
     posts2 <- mapM (fetchAttachments datadir) thread
 
+    -- this just prints the thread
     mapM_ (\(p, xs) -> do
         print (postNumber p)
         mapM_ (\(u, m, _) -> putStrLn $ " " ++ show (u, m)) xs
         putStrLn "")
         posts2
 
-    _ <- fetchLainchanFormPage
+    (ss, c) <- fetchLainchanFormPage
         lainchan_b
         mempty
 
+    putStrLn "current cookie jar:"
+    print c
+
+    mapM_ print ss
+
+    reply <- postLainchan
+        lainchan_post_url
+        (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ "/b/index.html"))
+        (head posts2)
+        ss
+
     putStrLn "Hello World"
+    putStrLn ""
+    print reply
+
+{-
+        ( header "User-Agent" "Mozilla/5.0 (X11; Linux x86_64; rv:79.0) Gecko/20100101 Firefox/79.0"
+        <> cookieJar c
+        )
+-}
 
 
-mkUrl :: Url 'Http -> Data.Text.Text -> Url 'Http
-mkUrl root = (foldl (/:) root) . (Data.Text.splitOn "/")
+mkUrl :: Url a -> Text.Text -> Url a
+mkUrl root = (foldl (/:) root) . (Text.splitOn "/")
 
 main :: IO ()
 main = do
@@ -572,10 +714,10 @@ main = do
     posts2 <-
         ( mapM
             (((flip fetchBunkerchanPostPage) (port bunkerchan_port)) . (mkUrl bunkerchan_root))
-            (map (Data.Text.pack . (drop 1)) threadPaths)
+            (map (Text.pack . (drop 1)) threadPaths)
         ) :: IO [[ Post ]]
 
-    mapM_ (processThread datadir) posts2
+    mapM_ (processThread datadir) (take 1 posts2)
 
     putStrLn "Done"
 
