@@ -84,7 +84,7 @@ instance Serialize CookieJar where
     put c = put $ show c
     get = get >>= return . read
 
-type PostWithAttachments = (Post, [ (Url 'Http, Maybe String, ByteString) ])
+type PostWithAttachments = (Post, [ (Url 'Https, Maybe String, ByteString) ])
 
 -- login page (new): https://leftypol.booru.org/index.php?page=login
 -- posts page (old): https://lefty.booru.org/index.php?page=post&s=list&tags=all&pid=0
@@ -148,12 +148,15 @@ delete_post_params i
             -- ./public/remove.php?id=11204&amp;removepost=1
 
 bunkerchan_port :: Int
-bunkerchan_port = 8080
+bunkerchan_port = 80
 
-bunkerchan_root :: Url 'Http
-bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
+-- bunkerchan_root :: Url 'Http
+-- bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
 
-bunkerchan_leftypol_catalog :: Url 'Http
+bunkerchan_root :: Url 'Https
+bunkerchan_root = https "bunkerchan.xyz"
+
+bunkerchan_leftypol_catalog :: Url 'Https
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
 
 httpGetB :: Url scheme -> Option scheme -> IO (Maybe String, ByteString, CookieJar)
