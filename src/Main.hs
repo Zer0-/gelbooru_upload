@@ -71,6 +71,7 @@ import Pageparsers
     , posts
     , threadsInCatalog
     , lainchanFormParams
+    , lainchanFirstReply
     , postsInThread
     , Post (..)
     , PostPart (..)
@@ -662,7 +663,9 @@ optFromFormField = undefined
 
 processThread :: String -> [ Post ] -> IO ()
 processThread datadir thread = do
-    posts2 <- mapM (fetchAttachments datadir) thread
+    posts2a <- mapM (fetchAttachments datadir) thread
+
+    let posts2 = filter dropUnknownFiles posts2a
 
     -- this just prints the thread
     mapM_ (\(p, xs) -> do
@@ -680,21 +683,45 @@ processThread datadir thread = do
 
     mapM_ print ss
 
+    -- post OP
     reply <- postLainchan
         lainchan_post_url
         (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ "/b/index.html"))
         (head posts2)
         ss
 
-    putStrLn "Hello World"
-    putStrLn ""
     print reply
 
-{-
-        ( header "User-Agent" "Mozilla/5.0 (X11; Linux x86_64; rv:79.0) Gecko/20100101 Firefox/79.0"
-        <> cookieJar c
+    putStrLn ""
+
+    threadUrlStr <- lainchanFirstReply reply
+
+    putStrLn threadUrlStr
+
+    mapM_
+        ( \p -> do
+            (ss2, _) <- fetchLainchanFormPage
+                (mkUrl lainchan_base $ Text.pack (drop 1 threadUrlStr))
+                mempty
+
+            mapM_ print ss
+
+            reply2 <- postLainchan
+                lainchan_post_url
+                (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ threadUrlStr))
+                p
+                ss2
+
+            print reply2
         )
--}
+        (drop 1 posts2)
+
+    where
+        dropUnknownFiles :: PostWithAttachments -> Bool
+        dropUnknownFiles (_, xs) = filter (\(_, m, _) -> badMime m) xs == []
+
+        badMime (Just "video/mp4") = True
+        badMime _ = False
 
 
 mkUrl :: Url a -> Text.Text -> Url a

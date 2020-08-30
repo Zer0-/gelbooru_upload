@@ -6,6 +6,7 @@ module Pageparsers
     , posts
     , threadsInCatalog
     , lainchanFormParams
+    , lainchanFirstReply
     , postsInThread
     , flatten
     , Post (..)
@@ -128,6 +129,13 @@ lainchanFormParams rawdoc = do
         >>> parseTextAreaFormField
 
     return $ as ++ bs
+
+lainchanFirstReply :: ByteString -> IO String
+lainchanFirstReply rawdoc = do
+    as <- runX $ mkdoc rawdoc
+        >>> css ".thread .intro a" >>> getAttrValue "href"
+
+    return $ head $ drop 2 as
 
 parseFormField :: Doc FormField
 parseFormField =
