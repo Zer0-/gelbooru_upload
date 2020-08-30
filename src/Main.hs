@@ -387,7 +387,7 @@ mkLainchanPostParams (p, xs) =
     [ partBS "name" $ BS.pack (name p)
     , partBS "email" $ BS.pack (fromMaybe "" $ email p)
     , partBS "subject" $ BS.pack (fromMaybe "" $ subject p)
-    , partBS "body" $ BS.pack (renderPostBody $ postBody p)
+    , partBS "body" $ encodeUtf8 $ Text.pack $ renderPostBody $ postBody p
     ]
 
      where
@@ -683,44 +683,48 @@ processThread datadir thread = do
 
     mapM_ print ss
 
-    -- post OP
-    reply <- postLainchan
-        lainchan_post_url
-        (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ "/b/index.html"))
-        (head posts2)
-        ss
-
-    print reply
-
-    putStrLn ""
-
-    threadUrlStr <- lainchanFirstReply reply
-
-    putStrLn threadUrlStr
-
-    mapM_
-        ( \p -> do
-            (ss2, _) <- fetchLainchanFormPage
-                (mkUrl lainchan_base $ Text.pack (drop 1 threadUrlStr))
-                mempty
-
-            mapM_ print ss
-
-            reply2 <- postLainchan
+    case posts2 of
+        [] -> return ()
+        _ -> do
+            -- post OP
+            reply <- postLainchan
                 lainchan_post_url
-                (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ threadUrlStr))
-                p
-                ss2
+                (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ "/b/index.html"))
+                (head posts2)
+                ss
 
-            print reply2
-        )
-        (drop 1 posts2)
+            print reply
+
+            putStrLn ""
+
+            threadUrlStr <- lainchanFirstReply reply
+
+            putStrLn threadUrlStr
+
+            mapM_
+                ( \p -> do
+                    (ss2, _) <- fetchLainchanFormPage
+                        (mkUrl lainchan_base $ Text.pack (drop 1 threadUrlStr))
+                        mempty
+
+                    mapM_ print ss
+
+                    reply2 <- postLainchan
+                        lainchan_post_url
+                        (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ threadUrlStr))
+                        p
+                        ss2
+
+                    print reply2
+                )
+                (drop 1 posts2)
 
     where
         dropUnknownFiles :: PostWithAttachments -> Bool
         dropUnknownFiles (_, xs) = filter (\(_, m, _) -> badMime m) xs == []
 
         badMime (Just "video/mp4") = True
+        badMime (Just "video/webm") = True
         badMime _ = False
 
 
@@ -744,7 +748,7 @@ main = do
             (map (Text.pack . (drop 1)) threadPaths)
         ) :: IO [[ Post ]]
 
-    mapM_ (processThread datadir) (take 1 posts2)
+    mapM_ (processThread datadir) posts2
 
     putStrLn "Done"
 
