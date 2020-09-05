@@ -3,7 +3,7 @@ cabal-version:       >=1.10
 -- init'.  For further documentation, see
 -- http://haskell.org/cabal/users-guide/
 
-name:                gelbooru-upload
+name:                bunkerchan-upload
 version:             0.1.0.0
 -- synopsis:
 -- description:
@@ -17,7 +17,7 @@ maintainer:          Zer000.cloudbyte@gmail.com
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
 
-executable gelbooru-upload
+executable bunkerchan-upload
   main-is:             Main.hs
   -- other-modules:
   -- other-extensions:

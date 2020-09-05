@@ -9,18 +9,18 @@ let
       , hspec-core, hspec-discover, http-api-data, http-client
       , http-client-tls, http-types, modern-uri, monad-control, mtl
       , QuickCheck, retry, stdenv, text, time, transformers
-      , transformers-base, unordered-containers
+      , transformers-base, unordered-containers, unliftio-core
       }:
       mkDerivation {
         pname = "req";
-        version = "3.1.0";
-        src = ../sources/req;
+        version = "3.5.0";
+        src = ../req;
         enableSeparateDataOutput = true;
         libraryHaskellDepends = [
           aeson authenticate-oauth base blaze-builder bytestring
           case-insensitive connection http-api-data http-client
           http-client-tls http-types modern-uri monad-control mtl retry text
-          time transformers transformers-base
+          time transformers transformers-base unliftio-core
         ];
         testHaskellDepends = [
           aeson base blaze-builder bytestring case-insensitive hspec
