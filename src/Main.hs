@@ -44,6 +44,7 @@ import Network.HTTP.Req
     , req
     , Req
     , defaultHttpConfig
+    , HttpConfig (..)
     , GET (..)
     , POST (..)
     , NoReqBody (..)
@@ -170,9 +171,12 @@ bunkerchan_root = https "bunkerchan.xyz"
 bunkerchan_leftypol_catalog :: Url 'Https
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
 
+httpConfig :: HttpConfig
+httpConfig = defaultHttpConfig { httpConfigBodyPreviewLength = 1024 * 5 }
+
 httpGetB2 :: Url scheme -> Option scheme -> IO HttpResponseDat
 httpGetB2 url params = do
-    runReq defaultHttpConfig $ do
+    runReq httpConfig $ do
         r <- req
             GET
             url
