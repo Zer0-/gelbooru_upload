@@ -18,14 +18,20 @@ import Data.Semigroup (Endo (..))
 import Data.Maybe (fromMaybe)
 import Data.Text.Encoding (encodeUtf8)
 import Control.Monad.IO.Class (liftIO)
+import Control.Exception.Safe (handle)
 import Data.Serialize (Serialize (..))
 import qualified Crypto.Hash.MD5 as MD5
+import Control.Concurrent (threadDelay)
 import Network.HTTP.Client
     ( defaultRequest
     , CookieJar
     , RequestBody (RequestBodyBS)
+    , HttpException (..)
+    , HttpExceptionContent (..)
+    , responseStatus
     )
 import Network.HTTP.Types (renderQuery, queryTextToQuery)
+import Network.HTTP.Types.Status (Status (statusCode))
 import Network.HTTP.Client.MultipartFormData
     ( partBS
     , partContentType
@@ -73,6 +79,7 @@ import Pageparsers
     , lainchanFormParams
     , lainchanFirstReply
     , postsInThread
+    , flatten
     , Post (..)
     , PostPart (..)
     , Attachment (..)
@@ -85,6 +92,9 @@ instance Serialize CookieJar where
     get = get >>= return . read
 
 type PostWithAttachments = (Post, [ (Url 'Https, Maybe String, ByteString) ])
+
+type HttpResponseDat = (Maybe String, ByteString, CookieJar)
+type HttpResponseWithMimeAndCookie = Either Int HttpResponseDat
 
 -- login page (new): https://leftypol.booru.org/index.php?page=login
 -- posts page (old): https://lefty.booru.org/index.php?page=post&s=list&tags=all&pid=0
@@ -160,13 +170,8 @@ bunkerchan_root = https "bunkerchan.xyz"
 bunkerchan_leftypol_catalog :: Url 'Https
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
 
-httpGetB :: Url scheme -> Option scheme -> IO (Maybe String, ByteString, CookieJar)
-httpGetB url params = do
-    putStrLn $
-        "[GET]"
-        ++ show url
-        ++ (BS.unpack $ renderParams params)
-
+httpGetB2 :: Url scheme -> Option scheme -> IO HttpResponseDat
+httpGetB2 url params = do
     runReq defaultHttpConfig $ do
         r <- req
             GET
@@ -180,6 +185,42 @@ httpGetB url params = do
             , responseBody r
             , responseCookieJar r
             )
+
+httpGetB :: Url scheme -> Option scheme -> IO HttpResponseWithMimeAndCookie
+httpGetB url params = do
+    putStrLn $
+        "[GET]"
+        ++ show url
+        ++ (BS.unpack $ renderParams params)
+
+    handle handler $
+        httpGetB2 url params >>= return . Right
+
+    where
+        handler :: HttpException -> IO HttpResponseWithMimeAndCookie
+        handler (HttpExceptionRequest _ (StatusCodeException resp _))
+            = return $ Left $ statusCode $ responseStatus resp
+        handler _ = return $ Left 0
+
+
+cachedGetB :: FilePath -> Url scheme -> Option scheme -> IO HttpResponseWithMimeAndCookie
+cachedGetB datadir url params =
+    fsmemoize
+        datadir
+        (uncurry hashUrl)
+        (uncurry httpGetB)
+        (url, params)
+
+cachedGet :: FilePath -> Url scheme -> Option scheme -> IO (Maybe String, ByteString)
+cachedGet datadir url params =
+    fsmemoize
+        datadir
+        (uncurry hashUrl)
+        (uncurry httpGet)
+        (url, params)
+
+getRawPageBody :: FilePath -> Url scheme -> Option scheme -> IO (Maybe String, ByteString)
+getRawPageBody = cachedGet
 
 httpGet :: Url scheme -> Option scheme -> IO (Maybe String, ByteString)
 httpGet url params = do
@@ -200,18 +241,6 @@ httpGet url params = do
             ( responseHeader r "Content-Type" >>= return . BS.unpack
             , responseBody r
             )
-
-cachedGet :: FilePath -> Url scheme -> Option scheme -> IO (Maybe String, ByteString)
-cachedGet datadir url params =
-    fsmemoize
-        datadir
-        (uncurry hashUrl)
-        (uncurry httpGet)
-        (url, params)
-
-getRawPageBody :: FilePath -> Url scheme -> Option scheme -> IO (Maybe String, ByteString)
-getRawPageBody = cachedGet
-
 
 renderParams :: Option scheme -> ByteString
 renderParams (Option f _) = renderQuery True (queryTextToQuery params)
@@ -255,8 +284,22 @@ fetchAndProcessPageDataU
     :: (ByteString -> IO a)
     -> Url scheme
     -> Option scheme
-    -> IO (a, CookieJar)
+    -> IO (Either Int (a, CookieJar))
 fetchAndProcessPageDataU process url params = do
+    rsp <- httpGetB
+            url
+            params
+
+    case rsp of
+        Left i -> return $ Left i
+        Right (_, rawdoc, c) -> do
+            result <- process rawdoc
+
+            return $ Right $ (result, c)
+
+    -- rsp >>= \(_, rawdoc, c) -> process rawdoc >>= \result -> return (result, c)
+
+    {-
     (_, rawdoc, c) <- httpGetB
             url
             params
@@ -264,6 +307,7 @@ fetchAndProcessPageDataU process url params = do
     result <- process rawdoc
 
     return (result, c)
+    -}
 
 fetchBooruPostPage
     :: String
@@ -289,9 +333,15 @@ fetchBooruImagePage datadir url params =
             mapM_ (putStrLn . ((++) "  ")) tags
             putStrLn ""
 
-fetchPostsFromBunkerCatalogPage :: Url a -> Option a -> IO [ String ]
-fetchPostsFromBunkerCatalogPage url params =
-    fetchAndProcessPageDataU process url params >>= return . fst
+fetchPostsFromBunkerCatalogPage :: Url a -> Option a -> IO (Maybe [ String ])
+fetchPostsFromBunkerCatalogPage url params = do
+    e <- fetchAndProcessPageDataU process url params
+
+    case e of
+        Left i -> do
+            putStrLn $ "ERROR getting catalog page " ++ show url ++ " status code " ++ show i
+            return Nothing
+        Right x -> return $ Just $ fst x
 
     where
         process rawdoc = do
@@ -302,9 +352,17 @@ fetchPostsFromBunkerCatalogPage url params =
             putStrLn ""
             return threadPaths
 
-fetchBunkerchanPostPage :: Url a -> Option a -> IO [ Post ]
-fetchBunkerchanPostPage url params =
-    fetchAndProcessPageDataU process url params >>= return . fst
+fetchBunkerchanPostsInThread :: Url a -> Option a -> IO (Maybe [ Post ])
+fetchBunkerchanPostsInThread url params = do
+    e <- fetchAndProcessPageDataU process url params
+
+    case e of
+        Left i -> do
+            putStrLn $ "ERROR getting thread page " ++ show url ++ "! status code: " ++ show i
+            return Nothing
+        Right x -> return $ Just $ fst x
+
+    -- fetchAndProcessPageDataU process url params >>= return . fst
 
     where
         process rawdoc = do
@@ -318,7 +376,14 @@ fetchBunkerchanPostPage url params =
 
 fetchLainchanFormPage :: Url a -> Option a -> IO ([ FormField ], CookieJar)
 fetchLainchanFormPage url params = do
-    fetchAndProcessPageDataU process url params
+    e <- fetchAndProcessPageDataU process url params
+
+    case e of
+        Left _ -> do
+            threadDelay $ 5 * (1000 * 1000)
+            fetchLainchanFormPage url params
+        Right x -> return x
+            
 
     where
         process rawdoc = do
@@ -388,9 +453,9 @@ mkloginParams username password
 mkLainchanPostParams :: PostWithAttachments -> [ Part ]
 mkLainchanPostParams (p, xs) =
     (map (uncurry requestPartFromAttachment) (zip [0..] xs2)) ++
-    [ partBS "name" $ BS.pack (name p)
-    , partBS "email" $ BS.pack (fromMaybe "" $ email p)
-    , partBS "subject" $ BS.pack (fromMaybe "" $ subject p)
+    [ partBS "name" $ encodeUtf8 $ Text.pack $ name p
+    , partBS "email" $ encodeUtf8 $ Text.pack $ take 30 $ fromMaybe "" $ email p
+    , partBS "subject" $ encodeUtf8 $ Text.pack $ fromMaybe "" $ subject p
     , partBS "body" $ encodeUtf8 $ Text.pack $ renderPostBody $ postBody p
     ]
 
@@ -412,10 +477,11 @@ renderPostBody = ((=<<) :: (PostPart -> String) -> [ PostPart ] ->  String) rend
         renderPart (GreenText ps)     = ps >>= renderPart
         renderPart (OrangeText ps)    = ps >>= renderPart
         renderPart (RedText ps)       = ps >>= renderPart
-        renderPart (Spoiler ps)       = "[spoiler]" ++ (ps >>= renderPart) ++ "[/spoiler]"
+        -- renderPart (Spoiler ps)       = "[spoiler]" ++ (ps >>= renderPart) ++ "[/spoiler]"
+        renderPart (Spoiler ps)       = "**" ++ (ps >>= renderPart) ++ "**"
         renderPart (Bold ps)          = "[b]" ++ (ps >>= renderPart) ++ "[/b]"
         renderPart (Underlined ps)    = "[b]" ++ (ps >>= renderPart) ++ "[/b]"
-        renderPart (Italics ps)       = "[i]" ++ (ps >>= renderPart) ++ "[/i]"
+        renderPart (Italics ps)       = "''" ++ (ps >>= renderPart) ++ "''"
         renderPart (Strikethrough ps) = "[i]" ++ (ps >>= renderPart) ++ "[/i]"
 
 requestPartFromAttachment :: Int -> (Attachment, Maybe String, ByteString) -> Part
@@ -642,34 +708,58 @@ main_old = do
         --[head $ parseFileList tagsdata]
 
 
-fetchAttachments :: String ->  Post -> IO PostWithAttachments
+fetchAttachments :: String ->  Post -> IO (Maybe PostWithAttachments)
 fetchAttachments datadir post2 = do
-    saved <- mapM
-        ( \a ->
-            let u = mkBnkrUrl $ prepareUrlStr $ attachmentUrl a
-            in
-                (getFn u)
-                >>= \(m, b) -> return (u, m, b)
+    saved <-
+        ( mapM
+            ( \a ->
+                let u = mkBnkrUrl $ prepareUrlStr $ attachmentUrl a
+                {-
+                 - TODO: Ban image urls here somewhere!
+                 -
+                 - Also the result of this "saved" will be a Maybe.
+                 - This needs to be zipped with the Attachments list in posts2
+                 - Then return posts2 with the  attachments list filtered
+                 - on the gotten attachment value not being Nothing
+                 -
+                 - and the attachment list flattened (looks like it already is)
+                 -}
+                in
+                    (getFn u)
+                    >>=
+                    ((\p ->
+                        case p of
+                            Left i -> do
+                                putStrLn $ "Could not fetch attachment " ++ show u
+                                    ++ " status code: " ++ show i
+                                return Nothing
+                            Right (m, b, _) -> return $ Just (u, m, b)
+                    ) :: HttpResponseWithMimeAndCookie -> IO (Maybe (Url 'Https, Maybe String, ByteString)))
+                    -- >>= \(m, b, _) -> return (u, m, b)
+            )
+            (attachments post2)
         )
-        (attachments post2)
 
-    return (post2, saved)
+    let saved1 = flatten saved
+
+    if length saved1 == 0 && length (postBody post2) == 0
+    then return Nothing
+    else return $ Just (post2, saved1)
+    -- should be a post3 here
 
     where
-        getFn = (flip (cachedGet datadir)) bunkerchan_port
+        getFn = (flip (cachedGetB datadir)) bunkerchan_port
 
         mkBnkrUrl = mkUrl bunkerchan_root
 
         prepareUrlStr = Text.pack . (drop 1)
 
-optFromFormField :: FormField -> Option a
-optFromFormField = undefined
 
 processThread :: String -> [ Post ] -> IO ()
 processThread datadir thread = do
     posts2a <- mapM (fetchAttachments datadir) thread
 
-    let posts2 = filter dropUnknownFiles posts2a
+    let posts2 = filter dropUnknownFiles $ filter dropUnknownMime (flatten posts2a)
 
     -- this just prints the thread
     mapM_ (\(p, xs) -> do
@@ -691,15 +781,15 @@ processThread datadir thread = do
         [] -> return ()
         _ -> do
             -- post OP
+
+            putStrLn "Posting OP:"
+            print $ (\(p, _) -> (postNumber p, subject p, attachments p)) (head posts2)
+
             reply <- postLainchan
                 lainchan_post_url
                 (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ "/b/index.html"))
                 (head posts2)
                 ss
-
-            print reply
-
-            putStrLn ""
 
             threadUrlStr <- lainchanFirstReply reply
 
@@ -711,25 +801,36 @@ processThread datadir thread = do
                         (mkUrl lainchan_base $ Text.pack (drop 1 threadUrlStr))
                         mempty
 
-                    mapM_ print ss
+                    mapM_ print ss2
 
-                    reply2 <- postLainchan
+                    putStrLn "Posting Reply:"
+                    print $ (\(p2, _) -> (postNumber p2, subject p2, attachments p2)) p
+
+                    postLainchan
                         lainchan_post_url
                         (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ threadUrlStr))
                         p
                         ss2
-
-                    print reply2
                 )
                 (drop 1 posts2)
 
     where
-        dropUnknownFiles :: PostWithAttachments -> Bool
-        dropUnknownFiles (_, xs) = filter (\(_, m, _) -> badMime m) xs == []
+        dropUnknownMime :: PostWithAttachments -> Bool
+        dropUnknownMime (_, xs) = filter (\(_, m, _) -> badMime m) xs == []
 
+        {-
         badMime (Just "video/mp4") = True
         badMime (Just "video/webm") = True
+        -}
         badMime _ = False
+
+        dropUnknownFiles :: PostWithAttachments -> Bool
+        dropUnknownFiles (p, _) =
+            filter badFile (map attachmentUrl (attachments p)) == []
+
+        badFile "/.media/8745619976e83ad3ea484f2aa3507c4f-imagepng.png" = True
+        badFile "/.media/52157a7ed00858d44ae0fab6a265bc27-imagepng.png" = True
+        badFile _ = False
 
 
 mkUrl :: Url a -> Text.Text -> Url a
@@ -742,17 +843,21 @@ main = do
 
     putStrLn $ "datadir: " ++ datadir
 
-    threadPaths <- fetchPostsFromBunkerCatalogPage
+    mThreadPaths <- fetchPostsFromBunkerCatalogPage
             bunkerchan_leftypol_catalog
             bunkerchan_port
 
-    posts2 <-
-        ( mapM
-            (((flip fetchBunkerchanPostPage) bunkerchan_port) . (mkUrl bunkerchan_root))
-            (map (Text.pack . (drop 1)) threadPaths)
-        ) :: IO [[ Post ]]
-
-    mapM_ (processThread datadir) posts2
+    case mThreadPaths of
+        Nothing -> return ()
+        Just threadPaths ->
+            mapM_
+                (\u -> do
+                    post2 <- ((flip fetchBunkerchanPostsInThread) bunkerchan_port) $ mkUrl bunkerchan_root u
+                    case post2 of
+                        Nothing -> return ()
+                        Just x -> processThread datadir x
+                )
+                (map (Text.pack . (drop 1)) threadPaths)
 
     putStrLn "Done"
 

@@ -39,7 +39,8 @@ executable gelbooru-upload
                        modern-uri,
                        split,
                        containers,
-                       cereal
+                       cereal,
+                       safe-exceptions
   -- hs-source-dirs:
   default-language:    Haskell2010
   ghc-options:     -Wall -dynamic

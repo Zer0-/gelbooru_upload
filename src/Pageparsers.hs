@@ -133,9 +133,9 @@ lainchanFormParams rawdoc = do
 lainchanFirstReply :: ByteString -> IO String
 lainchanFirstReply rawdoc = do
     as <- runX $ mkdoc rawdoc
-        >>> css ".thread .intro a" >>> getAttrValue "href"
+        >>> css ".thread .intro a:not([class])" >>> getAttrValue "href"
 
-    return $ head $ drop 2 as
+    return $ head as
 
 parseFormField :: Doc FormField
 parseFormField =
