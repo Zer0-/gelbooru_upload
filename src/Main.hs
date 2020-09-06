@@ -22,12 +22,11 @@ import Control.Exception.Safe (handle)
 import Data.Serialize (Serialize (..))
 import qualified Crypto.Hash.MD5 as MD5
 import Control.Concurrent (threadDelay)
+import qualified Network.HTTP.Client as HTTP
 import Network.HTTP.Client
     ( defaultRequest
     , CookieJar
     , RequestBody (RequestBodyBS)
-    , HttpException (..)
-    , HttpExceptionContent (..)
     , responseStatus
     )
 import Network.HTTP.Types (renderQuery, queryTextToQuery)
@@ -68,6 +67,7 @@ import Network.HTTP.Req
     , Option (Option)
     , Url
     , Scheme (..)
+    , HttpException (..)
     )
 --import Debug.Trace (trace)
 import Text.XML.HXT.DOM.Util (uncurry3)
@@ -95,7 +95,8 @@ instance Serialize CookieJar where
 type PostWithAttachments = (Post, [ (Url 'Https, Maybe String, ByteString) ])
 
 type HttpResponseDat = (Maybe String, ByteString, CookieJar)
-type HttpResponseWithMimeAndCookie = Either Int HttpResponseDat
+type HttpResponseWithMimeAndCookie =
+    Either (Int, Maybe ByteString) HttpResponseDat
 
 -- login page (new): https://leftypol.booru.org/index.php?page=login
 -- posts page (old): https://lefty.booru.org/index.php?page=post&s=list&tags=all&pid=0
@@ -174,7 +175,7 @@ bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
 httpConfig :: HttpConfig
 httpConfig = defaultHttpConfig { httpConfigBodyPreviewLength = 1024 * 5 }
 
-httpGetB2 :: Url scheme -> Option scheme -> IO HttpResponseDat
+httpGetB2 :: Url scheme -> Option scheme -> IO HttpResponseWithMimeAndCookie
 httpGetB2 url params = do
     runReq httpConfig $ do
         r <- req
@@ -184,7 +185,7 @@ httpGetB2 url params = do
             bsResponse
             params
 
-        liftIO $ return $
+        liftIO $ return $ Right $
             ( responseHeader r "Content-Type" >>= return . BS.unpack
             , responseBody r
             , responseCookieJar r
@@ -197,15 +198,17 @@ httpGetB url params = do
         ++ show url
         ++ (BS.unpack $ renderParams params)
 
-    handle handler $
-        httpGetB2 url params >>= return . Right
+    handle handler $ httpGetB2 url params
 
-    where
-        handler :: HttpException -> IO HttpResponseWithMimeAndCookie
-        handler (HttpExceptionRequest _ (StatusCodeException resp _))
-            = return $ Left $ statusCode $ responseStatus resp
-        handler _ = return $ Left 0
-
+handler :: HttpException -> IO HttpResponseWithMimeAndCookie
+handler
+    ( VanillaHttpException
+        ( HTTP.HttpExceptionRequest
+            _ -- Request
+            (HTTP.StatusCodeException resp bs)
+        )
+    ) = return $ Left (statusCode $ responseStatus resp, Just bs)
+handler _ = return $ Left (0, Nothing)
 
 cachedGetB :: FilePath -> Url scheme -> Option scheme -> IO HttpResponseWithMimeAndCookie
 cachedGetB datadir url params =
@@ -233,7 +236,7 @@ httpGet url params = do
         ++ show url
         ++ (BS.unpack $ renderParams params)
 
-    runReq defaultHttpConfig $ do
+    runReq httpConfig $ do
         r <- req
             GET
             url
@@ -288,7 +291,7 @@ fetchAndProcessPageDataU
     :: (ByteString -> IO a)
     -> Url scheme
     -> Option scheme
-    -> IO (Either Int (a, CookieJar))
+    -> IO (Either (Int, Maybe ByteString) (a, CookieJar))
 fetchAndProcessPageDataU process url params = do
     rsp <- httpGetB
             url
@@ -342,8 +345,9 @@ fetchPostsFromBunkerCatalogPage url params = do
     e <- fetchAndProcessPageDataU process url params
 
     case e of
-        Left i -> do
-            putStrLn $ "ERROR getting catalog page " ++ show url ++ " status code " ++ show i
+        Left (i, bs) -> do
+            putStrLn $ "ERROR getting catalog page " ++ show url ++ " status code " ++ show i ++ " response:"
+            print bs
             return Nothing
         Right x -> return $ Just $ fst x
 
@@ -383,7 +387,9 @@ fetchLainchanFormPage url params = do
     e <- fetchAndProcessPageDataU process url params
 
     case e of
-        Left _ -> do
+        Left (ie, bs) -> do
+            putStrLn $ "GET form page " ++ show url ++ " failed! waiting and retrying."
+            putStrLn $ "Status Code: " ++ show ie ++ " \n" ++ show bs
             threadDelay $ 5 * (1000 * 1000)
             fetchLainchanFormPage url params
         Right x -> return x
@@ -402,9 +408,9 @@ postLainchan
     -> Option a
     -> PostWithAttachments
     -> [ FormField ]
-    -> IO ByteString
+    -> IO HttpResponseWithMimeAndCookie
 postLainchan u o ps ffs =
-    runReq defaultHttpConfig $ do
+    handle handler $ runReq httpConfig $ do
         payload <- reqBodyMultipart $ defaultParams ++ (mkLainchanPostParams ps)
 
         r <- req
@@ -415,7 +421,11 @@ postLainchan u o ps ffs =
             o
 
         case responseStatusCode r of
-            200 -> liftIO $ return $ responseBody r
+            200 -> liftIO $ return $ Right $
+                    ( responseHeader r "Content-Type" >>= return . BS.unpack
+                    , responseBody r
+                    , responseCookieJar r
+                    )
             e -> error $ "Upload failed! result code " ++ show e
 
      where
@@ -429,7 +439,7 @@ postLainchan u o ps ffs =
         isDefault _ = True
 
 login_ :: Url scheme -> Option scheme -> FormUrlEncodedParam -> IO CookieJar
-login_ url params payload = runReq defaultHttpConfig $
+login_ url params payload = runReq httpConfig $
     (req
         POST
         url
@@ -546,7 +556,7 @@ post_
     -> [String]
     -> IO ByteString
 post_ mime url params imgdir cookies filename tags =
-    runReq defaultHttpConfig $ do
+    runReq httpConfig $ do
         payload <- mkPostParams mime imgdir filename tags
 
         r <- req
@@ -795,28 +805,41 @@ processThread datadir thread = do
                 (head posts2)
                 ss
 
-            threadUrlStr <- lainchanFirstReply reply
+            case reply of
+                Left (ie, bs) -> do
+                        putStrLn $ "POST  failed! Status Code: " ++ show ie
+                        putStrLn $ show bs
+                        processThread datadir $ drop 1 thread
+                Right (_, rawreply, _) -> do
+                    threadUrlStr <- lainchanFirstReply rawreply
 
-            putStrLn threadUrlStr
+                    putStrLn threadUrlStr
 
-            mapM_
-                ( \p -> do
-                    (ss2, _) <- fetchLainchanFormPage
-                        (mkUrl lainchan_base $ Text.pack (drop 1 threadUrlStr))
-                        mempty
+                    mapM_
+                        ( \p -> do
+                            (ss2, _) <- fetchLainchanFormPage
+                                (mkUrl lainchan_base $ Text.pack (drop 1 threadUrlStr))
+                                mempty
 
-                    mapM_ print ss2
+                            mapM_ print ss2
 
-                    putStrLn "Posting Reply:"
-                    print $ (\(p2, _) -> (postNumber p2, subject p2, attachments p2)) p
+                            putStrLn "Posting Reply:"
+                            print $ (\(p2, _) -> (postNumber p2, subject p2, attachments p2)) p
 
-                    postLainchan
-                        lainchan_post_url
-                        (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ threadUrlStr))
-                        p
-                        ss2
-                )
-                (drop 1 posts2)
+                            result <- postLainchan
+                                lainchan_post_url
+                                (header "Referer" (BS.pack $ "http://" ++ lainchan_ip ++ threadUrlStr))
+                                p
+                                ss2
+
+                            case result of
+                                Left (ie, bs) -> do
+                                    putStrLn $ "POST  failed! Status Code: " ++ show ie
+                                    print bs
+                                    return ()
+                                Right _ -> return ()
+                        )
+                        (drop 1 posts2)
 
     where
         dropUnknownMime :: PostWithAttachments -> Bool
