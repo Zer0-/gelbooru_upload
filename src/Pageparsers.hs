@@ -154,7 +154,7 @@ postPartFromXmlTree (NTree (XTag qn xs) c)
         = Quote $ head (xGetText c)
     | qualifiedName qn == "a" && elem "_blank" (xGetAttr "target" xs)
         = PostedUrl $ head (xGetAttr "href" xs)
-    | qualifiedName qn == "a" = Quote $ head (xGetText c)
+    | qualifiedName qn == "a" = PostedUrl $ head (xGetText c)
     | qualifiedName qn == "span" && elem "greenText" (xGetAttr "class" xs)
         = GreenText $ map postPartFromXmlTree c
     | qualifiedName qn == "span" && elem "orangeText" (xGetAttr "class" xs)

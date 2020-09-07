@@ -53,7 +53,7 @@ import Network.HTTP.Req
     , FormUrlEncodedParam
     , https
     , http
-    , port
+    -- , port
     , bsResponse
     , ignoreResponse
     , responseBody
@@ -162,16 +162,16 @@ delete_post_params i
             -- ./public/remove.php?id=11204&amp;removepost=1
 
 bunkerchan_port :: Option scheme
-bunkerchan_port = port 8080
--- bunkerchan_port = mempty
+--bunkerchan_port = port 8080
+bunkerchan_port = mempty
 
-bunkerchan_root :: Url 'Http
-bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
+-- bunkerchan_root :: Url 'Http
+-- bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
 
--- bunkerchan_root :: Url 'Https
--- bunkerchan_root = https "bunkerchan.xyz"
+bunkerchan_root :: Url 'Https
+bunkerchan_root = https "bunkerchan.xyz"
 
-bunkerchan_leftypol_catalog :: Url 'Http
+bunkerchan_leftypol_catalog :: Url 'Https
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
 
 httpConfig :: HttpConfig
@@ -290,14 +290,15 @@ fetchPageData datadir process url params = do
 
 
 fetchAndProcessPageDataU
-    :: (ByteString -> IO a)
+    :: Maybe String
+    -> (ByteString -> IO a)
     -> Url scheme
     -> Option scheme
     -> IO (Either (Int, Maybe ByteString) (a, CookieJar))
-fetchAndProcessPageDataU process url params = do
-    rsp <- httpGetB
-            url
-            params
+fetchAndProcessPageDataU datadir process url params = do
+    rsp <- case datadir of
+            Just dirname -> cachedGetB dirname url params
+            Nothing -> httpGetB url params
 
     case rsp of
         Left i -> return $ Left i
@@ -342,9 +343,13 @@ fetchBooruImagePage datadir url params =
             mapM_ (putStrLn . ((++) "  ")) tags
             putStrLn ""
 
-fetchPostsFromBunkerCatalogPage :: Url a -> Option a -> IO (Maybe [ String ])
-fetchPostsFromBunkerCatalogPage url params = do
-    e <- fetchAndProcessPageDataU process url params
+fetchPostsFromBunkerCatalogPage
+    :: Maybe String
+    -> Url a
+    -> Option a
+    -> IO (Maybe [ String ])
+fetchPostsFromBunkerCatalogPage datadir url params = do
+    e <- fetchAndProcessPageDataU datadir process url params
 
     case e of
         Left (i, bs) -> do
@@ -362,9 +367,9 @@ fetchPostsFromBunkerCatalogPage url params = do
             putStrLn ""
             return threadPaths
 
-fetchBunkerchanPostsInThread :: Url a -> Option a -> IO (Maybe [ Post ])
-fetchBunkerchanPostsInThread url params = do
-    e <- fetchAndProcessPageDataU process url params
+fetchBunkerchanPostsInThread :: Maybe String -> Url a -> Option a -> IO (Maybe [ Post ])
+fetchBunkerchanPostsInThread datadir url params = do
+    e <- fetchAndProcessPageDataU datadir process url params
 
     case e of
         Left i -> do
@@ -386,7 +391,7 @@ fetchBunkerchanPostsInThread url params = do
 
 fetchLainchanFormPage :: Url a -> Option a -> IO ([ FormField ], CookieJar)
 fetchLainchanFormPage url params = do
-    e <- fetchAndProcessPageDataU process url params
+    e <- fetchAndProcessPageDataU Nothing process url params
 
     case e of
         Left (ie, bs) -> do
@@ -726,7 +731,7 @@ main_old = do
         --[head $ parseFileList tagsdata]
 
 
-fetchAttachments :: String ->  Post -> IO (Maybe (PostWithAttachments 'Http))
+fetchAttachments :: String ->  Post -> IO (Maybe (PostWithAttachments 'Https))
 fetchAttachments datadir post2 = do
     saved <-
         ( mapM
@@ -752,7 +757,7 @@ fetchAttachments datadir post2 = do
                                     ++ " status code: " ++ show i
                                 return Nothing
                             Right (m, b, _) -> return $ Just (u, m, b)
-                    ) :: HttpResponseWithMimeAndCookie -> IO (Maybe (Url 'Http, Maybe String, ByteString)))
+                    ) :: HttpResponseWithMimeAndCookie -> IO (Maybe (Url 'Https, Maybe String, ByteString)))
                     -- >>= \(m, b, _) -> return (u, m, b)
             )
             (attachments post2)
@@ -875,6 +880,7 @@ main = do
     putStrLn $ "datadir: " ++ datadir
 
     mThreadPaths <- fetchPostsFromBunkerCatalogPage
+            (Just datadir)
             bunkerchan_leftypol_catalog
             bunkerchan_port
 
@@ -883,7 +889,7 @@ main = do
         Just threadPaths ->
             mapM
                 ( \u ->
-                    ((flip fetchBunkerchanPostsInThread) bunkerchan_port) $
+                    ((flip (fetchBunkerchanPostsInThread $ Just datadir)) bunkerchan_port) $
                         mkUrl bunkerchan_root u
                 )
                 (map (Text.pack . (drop 1)) $ reverse threadPaths)
@@ -899,9 +905,17 @@ main = do
      -}
 
     putStrLn $ "have " ++ (show $ length threads) ++ " threads!"
-    print threads
+
+    mapM_
+        printPostPartQuote
+        (concat threads >>= postBody)
 
     putStrLn "Done"
+
+    where
+        printPostPartQuote :: PostPart -> IO ()
+        printPostPartQuote (Quote s) = putStrLn s
+        printPostPartQuote _ = return ()
 
 
 mkTagUpdatePostParams
