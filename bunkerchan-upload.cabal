@@ -42,7 +42,8 @@ executable bunkerchan-upload
                        split,
                        containers,
                        cereal,
-                       safe-exceptions
+                       safe-exceptions,
+                       parsec
   -- hs-source-dirs:
   default-language:    Haskell2010
   ghc-options:     -Wall -dynamic

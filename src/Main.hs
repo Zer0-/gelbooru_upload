@@ -76,6 +76,7 @@ import Pageparsers
     , FormField (..)
     )
 import FSMemoize (fsmemoize)
+import Retopo (parseQuoteLink)
 
 instance Serialize CookieJar where
     put c = put $ show c
@@ -86,9 +87,6 @@ type PostWithAttachments scheme = (Post, [ (Url scheme, Maybe String, ByteString
 type HttpResponseDat = (Maybe String, ByteString, CookieJar)
 type HttpResponseWithMimeAndCookie =
     Either (Int, Maybe ByteString) HttpResponseDat
-
--- login page (new): https://leftypol.booru.org/index.php?page=login
--- posts page (old): https://lefty.booru.org/index.php?page=post&s=list&tags=all&pid=0
 
 lainchan_domain :: String
 lainchan_domain = "167.99.9.53"
@@ -548,12 +546,12 @@ main = do
     putStrLn $ "have " ++ (show $ length threads) ++ " threads!"
 
     mapM_
-        printPostPartQuote
+        (printPostPartQuote "leftypol")
         (concat threads >>= postBody)
 
     putStrLn "Done"
 
     where
-        printPostPartQuote :: PostPart -> IO ()
-        printPostPartQuote (Quote s) = putStrLn s
-        printPostPartQuote _ = return ()
+        printPostPartQuote :: String -> PostPart -> IO ()
+        printPostPartQuote boardname (Quote s) = print $ parseQuoteLink boardname s
+        printPostPartQuote _ _ = return ()
