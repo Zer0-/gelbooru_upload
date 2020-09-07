@@ -24,6 +24,8 @@ executable bunkerchan-upload
   hs-source-dirs:      src
   other-modules:       FSMemoize
                        Pageparsers
+                       Retopo
+                       Types
   build-depends:       base >=4.12 && <4.13,
                        bytestring,
                        req,

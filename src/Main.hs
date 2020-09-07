@@ -53,7 +53,7 @@ import Network.HTTP.Req
     , FormUrlEncodedParam
     , https
     , http
-    --, port
+    , port
     , bsResponse
     , ignoreResponse
     , responseBody
@@ -72,6 +72,11 @@ import Network.HTTP.Req
 --import Debug.Trace (trace)
 import Text.XML.HXT.DOM.Util (uncurry3)
 
+import Types
+    ( Post (..)
+    , PostPart (..)
+    , Attachment (..)
+    )
 import Pageparsers
     ( imageLinks
     , imagePageFilenameTags
@@ -81,9 +86,6 @@ import Pageparsers
     , lainchanFirstReply
     , postsInThread
     , flatten
-    , Post (..)
-    , PostPart (..)
-    , Attachment (..)
     , FormField (..)
     )
 import FSMemoize (fsmemoize)
@@ -92,7 +94,7 @@ instance Serialize CookieJar where
     put c = put $ show c
     get = get >>= return . read
 
-type PostWithAttachments = (Post, [ (Url 'Https, Maybe String, ByteString) ])
+type PostWithAttachments scheme = (Post, [ (Url scheme, Maybe String, ByteString) ])
 
 type HttpResponseDat = (Maybe String, ByteString, CookieJar)
 type HttpResponseWithMimeAndCookie =
@@ -160,16 +162,16 @@ delete_post_params i
             -- ./public/remove.php?id=11204&amp;removepost=1
 
 bunkerchan_port :: Option scheme
--- bunkerchan_port = port 8080
-bunkerchan_port = mempty
+bunkerchan_port = port 8080
+-- bunkerchan_port = mempty
 
--- bunkerchan_root :: Url 'Http
--- bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
+bunkerchan_root :: Url 'Http
+bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
 
-bunkerchan_root :: Url 'Https
-bunkerchan_root = https "bunkerchan.xyz"
+-- bunkerchan_root :: Url 'Https
+-- bunkerchan_root = https "bunkerchan.xyz"
 
-bunkerchan_leftypol_catalog :: Url 'Https
+bunkerchan_leftypol_catalog :: Url 'Http
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
 
 httpConfig :: HttpConfig
@@ -406,7 +408,7 @@ fetchLainchanFormPage url params = do
 postLainchan
     :: Url a
     -> Option a
-    -> PostWithAttachments
+    -> PostWithAttachments scheme
     -> [ FormField ]
     -> IO HttpResponseWithMimeAndCookie
 postLainchan u o ps ffs =
@@ -464,7 +466,7 @@ mkloginParams username password
     <> "pass" =: password
     <> "submit" =: ("Log+in" :: String)
 
-mkLainchanPostParams :: PostWithAttachments -> [ Part ]
+mkLainchanPostParams :: PostWithAttachments scheme -> [ Part ]
 mkLainchanPostParams (p, xs) =
     (map (uncurry requestPartFromAttachment) (zip [0..] xs2)) ++
     [ partBS "name" $ encodeUtf8 $ Text.pack $ name p
@@ -664,13 +666,15 @@ parseMimeFile
 
 {-
  - TODO:
- -      - get memoized file data
- -      - post on lainchan
- -          - PostPart -> String
- -          - file upload (this should be working already hopefully)
- -
- -      - GET board page from lainchan (to post op)
- -      - parse parameters
+ -      - get all html post data (not the attachments!) at once
+ -      - build a map :: post number -> Post
+ -      - build (Post, deps) tuples from threads :: [[Post]]
+ -      - then fold over the tuples with the map as a reference to traverse
+ -          the dependancy tree, building a list as we go.
+ -      - topo sort requires keeping a set of visited nodes, those can just be
+ -          a set of old post ids.
+ -      - post the posts in order, but then have to get the new post id and fix
+ -      subsequent posts. Rewriting the body.
  -}
 
 main_old :: IO ()
@@ -722,7 +726,7 @@ main_old = do
         --[head $ parseFileList tagsdata]
 
 
-fetchAttachments :: String ->  Post -> IO (Maybe PostWithAttachments)
+fetchAttachments :: String ->  Post -> IO (Maybe (PostWithAttachments 'Http))
 fetchAttachments datadir post2 = do
     saved <-
         ( mapM
@@ -748,7 +752,7 @@ fetchAttachments datadir post2 = do
                                     ++ " status code: " ++ show i
                                 return Nothing
                             Right (m, b, _) -> return $ Just (u, m, b)
-                    ) :: HttpResponseWithMimeAndCookie -> IO (Maybe (Url 'Https, Maybe String, ByteString)))
+                    ) :: HttpResponseWithMimeAndCookie -> IO (Maybe (Url 'Http, Maybe String, ByteString)))
                     -- >>= \(m, b, _) -> return (u, m, b)
             )
             (attachments post2)
@@ -842,7 +846,7 @@ processThread datadir thread = do
                         (drop 1 posts2)
 
     where
-        dropUnknownMime :: PostWithAttachments -> Bool
+        dropUnknownMime :: PostWithAttachments scheme -> Bool
         dropUnknownMime (_, xs) = filter (\(_, m, _) -> badMime m) xs == []
 
         {-
@@ -851,7 +855,7 @@ processThread datadir thread = do
         -}
         badMime _ = False
 
-        dropUnknownFiles :: PostWithAttachments -> Bool
+        dropUnknownFiles :: PostWithAttachments scheme -> Bool
         dropUnknownFiles (p, _) =
             filter badFile (map attachmentUrl (attachments p)) == []
 
@@ -874,17 +878,28 @@ main = do
             bunkerchan_leftypol_catalog
             bunkerchan_port
 
-    case mThreadPaths of
-        Nothing -> return ()
+    threads1 <- case mThreadPaths of
+        Nothing -> return []
         Just threadPaths ->
-            mapM_
-                (\u -> do
-                    post2 <- ((flip fetchBunkerchanPostsInThread) bunkerchan_port) $ mkUrl bunkerchan_root u
-                    case post2 of
-                        Nothing -> return ()
-                        Just x -> processThread datadir x
+            mapM
+                ( \u ->
+                    ((flip fetchBunkerchanPostsInThread) bunkerchan_port) $
+                        mkUrl bunkerchan_root u
                 )
-                (map (Text.pack . (drop 1)) threadPaths)
+                (map (Text.pack . (drop 1)) $ reverse threadPaths)
+
+    let threads = (flatten threads1) :: [[ Post ]] -- ✓
+
+    {-
+     - So now what?
+     -  ok Have? [[ Post ]]
+     -  WANT? Map Int Post
+     -  call it ? postsByNum
+     -  call function? indexPosts
+     -}
+
+    putStrLn $ "have " ++ (show $ length threads) ++ " threads!"
+    print threads
 
     putStrLn "Done"
 
