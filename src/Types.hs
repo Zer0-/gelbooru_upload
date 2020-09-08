@@ -32,4 +32,6 @@ data Post = Post
     , postBody :: [ PostPart ]
     } deriving Show
 
-type PostWithDeps = (Post, [ Int ])
+type PostId = (String, Int) -- String is the board name
+
+type PostWithDeps = (Post, PostId, [ PostId ]) -- post, thread identifier, dependencies ids

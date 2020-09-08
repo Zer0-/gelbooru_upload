@@ -1,10 +1,13 @@
 module Retopo
     ( indexPosts
-    , parseQuoteLink
+    , postsDeps
+    , orderDeps
     ) where
 
+import Data.Map (Map, fromList, toList)
+import qualified Data.Map as Map (lookup)
+import qualified Data.Set as Set
 import Data.List (foldl')
-import Data.Map (Map, empty)
 import Text.Parsec.Pos (incSourceColumn)
 import Text.Parsec.Prim (Parsec, tokenPrim, (<|>), runP)
 import Text.Parsec.Error (ParseError)
@@ -13,10 +16,16 @@ import Text.Parsec.Combinator (between, many1)
 import Types
     ( PostWithDeps
     , Post (..)
+    , PostPart (Quote)
+    , PostId
     )
+
+import Pageparsers (flatten)
 
 -- Parser For Quotes Begin
 --
+-- >>12345
+-- or
 -- >>/leftypol/12345
 -- Parser for these types of quote links
 
@@ -65,8 +74,6 @@ parseQuoteLink1 :: String -> Either ParseError PostIdA
 parseQuoteLink1 x = runP quoteParser () "Quote" x
 -- Parser End
 
-type PostId = (String, Int) -- String is the board name
-
 parseQuoteLink :: String -> String -> Either ParseError PostId
 parseQuoteLink boardname x =
     let result = parseQuoteLink1 x
@@ -77,24 +84,75 @@ parseQuoteLink boardname x =
             Right (Just b, i) -> Right (b, i)
 
 
-postDependencies :: Post -> [ PostId ]
-postDependencies = undefined
+postDependencies :: String -> Post -> [ PostId ]
+postDependencies boardname post =
+    flatten $ map
+        (eitherToMaybe . (parseQuoteLink boardname) . getQuoteStr)
+        (filter onlyQuote $ postBody post)
+
+    where
+        eitherToMaybe (Left _) = Nothing
+        eitherToMaybe (Right x) = Just x
+
+        getQuoteStr (Quote s) = s
+        getQuoteStr _ = undefined
+
+        onlyQuote (Quote _) = True
+        onlyQuote _ = False
 
 
-postsDeps :: [[ Post ]] -> PostWithDeps
-postsDeps = undefined
+postsDeps :: String -> [[ Post ]] -> [ PostWithDeps ]
+postsDeps boardname posts = posts >>= procThread
+    where
+        procThread :: [ Post ] -> [ PostWithDeps ]
+        procThread [] = []
+        procThread (x:xs) =
+            let postId = (boardname, postNumber x)
+            in
+                -- this first post is the OP. it's id is the threadId
+                -- The op only has dependencies we can gather from it's body,
+                -- the rest of the posts have an implicit dependency on the
+                -- post above theirs, even if they don't quote anything
+                (x, postId, getFilteredDeps x)
+                : procThread1 postId postId xs
+
+        procThread1 :: PostId -> PostId -> [ Post ] -> [ PostWithDeps ]
+        procThread1 _ _ [] = []
+        procThread1 threadId prevPost (x:xs) =
+            (x, threadId, prevPost : getFilteredDeps x)
+            : procThread1 threadId (boardname, postNumber x) xs
+
+        getFilteredDeps :: Post -> [ PostId ]
+        getFilteredDeps p = filter (\(_, i) -> i < postNumber p) $
+            postDependencies boardname p
 
 
 indexPosts :: [ PostWithDeps ] -> Map PostId PostWithDeps
-indexPosts = foldl' asdf empty
+indexPosts = fromList . (map createPair)
     where
-        asdf :: Map PostId PostWithDeps -> PostWithDeps -> Map PostId PostWithDeps
-        asdf = undefined
+        createPair :: PostWithDeps -> (PostId, PostWithDeps)
+        createPair (p, (boardname, threadid), deps) =
+            ((boardname, postNumber p), (p, (boardname, threadid), deps))
 
-{-
-indexPosts :: [[ Post ]] -> Map Int Post
-indexPosts = foldl' asdf empty
+orderDeps :: Map PostId PostWithDeps -> [ PostWithDeps ]
+orderDeps postsMap = snd $ foldl' foldfn (Set.empty, []) (toList postsMap)
     where
-        asdf :: Map Int Post -> [ Post ] -> Map Int Post
-        asdf = undefined
--}
+        foldfn
+            :: (Set.Set PostId, [ PostWithDeps ])
+            -> (PostId, PostWithDeps)
+            -> (Set.Set PostId, [ PostWithDeps ])
+        foldfn (visited, result) (pstId, (p, thrdId, deps))
+            | Set.member pstId visited = (visited, result)
+            | otherwise =
+                let (visited2, result2) =
+                        -- recurse (foldl' again over the deps of the current post)
+                        foldl'
+                            foldfn
+                            (Set.insert pstId visited, result)
+                            (fetchMapDeps deps)
+                in
+                    ( visited2
+                    , result2 ++ [(p, thrdId, deps)]
+                    )
+
+        fetchMapDeps = flatten . map (\p -> Map.lookup p postsMap >>= return . ((,) p))

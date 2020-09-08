@@ -76,7 +76,7 @@ import Pageparsers
     , FormField (..)
     )
 import FSMemoize (fsmemoize)
-import Retopo (parseQuoteLink)
+import Retopo (postsDeps, indexPosts, orderDeps)
 
 instance Serialize CookieJar where
     put c = put $ show c
@@ -535,23 +535,11 @@ main = do
 
     let threads = (flatten threads1) :: [[ Post ]] -- ✓
 
-    {-
-     - So now what?
-     -  ok Have? [[ Post ]]
-     -  WANT? Map Int Post
-     -  call it ? postsByNum
-     -  call function? indexPosts
-     -}
-
     putStrLn $ "have " ++ (show $ length threads) ++ " threads!"
 
-    mapM_
-        (printPostPartQuote "leftypol")
-        (concat threads >>= postBody)
+    mapM_ print (orderDeps $ indexPosts $ postsDeps "leftypol" threads)
+
+        --(printPostPartQuote "leftypol")
+        --(concat threads >>= postBody)
 
     putStrLn "Done"
-
-    where
-        printPostPartQuote :: String -> PostPart -> IO ()
-        printPostPartQuote boardname (Quote s) = print $ parseQuoteLink boardname s
-        printPostPartQuote _ _ = return ()
