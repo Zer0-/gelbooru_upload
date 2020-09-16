@@ -66,6 +66,7 @@ import Types
     ( Post (..)
     , PostPart (..)
     , Attachment (..)
+    , PostWithDeps
     )
 import Pageparsers
     ( threadsInCatalog
@@ -359,13 +360,6 @@ requestPartFromAttachment i (a, m, bs) =
 
 {-
  - TODO:
- -      - get all html post data (not the attachments!) at once
- -      - build a map :: post number -> Post
- -      - build (Post, deps) tuples from threads :: [[Post]]
- -      - then fold over the tuples with the map as a reference to traverse
- -          the dependancy tree, building a list as we go.
- -      - topo sort requires keeping a set of visited nodes, those can just be
- -          a set of old post ids.
  -      - post the posts in order, but then have to get the new post id and fix
  -      subsequent posts. Rewriting the body.
  -}
@@ -437,6 +431,7 @@ processThread datadir thread = do
     putStrLn "current cookie jar:"
     print c
 
+    -- what is ss? form field list aparantly. [ FormField ]
     mapM_ print ss
 
     case posts2 of
@@ -537,9 +532,19 @@ main = do
 
     putStrLn $ "have " ++ (show $ length threads) ++ " threads!"
 
-    mapM_ print (orderDeps $ indexPosts $ postsDeps "leftypol" threads)
+    let orderedPosts = (orderDeps $ indexPosts $ postsDeps "leftypol" threads) :: [ PostWithDeps ]
 
-        --(printPostPartQuote "leftypol")
-        --(concat threads >>= postBody)
+    mapM_ print orderedPosts
+
+    -- type PostId = (String, Int) -- String is the board name
+    -- type PostWithDeps = (Post, PostId, [ PostId ]) -- post, thread identifier, dependencies ids
+    -- (orderDeps $ indexPosts $ postsDeps "leftypol" threads) :: [ PostWithDeps ]
+    --  - attachments are fetched first,
+    --  - then a suitable "polling url" is found by checking the thread map
+    --  - then fetching that page which i've called the "polling url" (to get form data)
+    --  - then posting to the right page with the right page data
+
+    --(printPostPartQuote "leftypol")
+    --(concat threads >>= postBody)
 
     putStrLn "Done"
