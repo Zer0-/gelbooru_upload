@@ -17,7 +17,7 @@ import Text.Parsec.Combinator (between, many1)
 import Types
     ( PostWithDeps
     , Post (..)
-    , PostPart (Quote)
+    , PostPart (..)
     , PostId
     )
 
@@ -88,25 +88,28 @@ parseQuoteLink boardname x =
 postDependencies :: String -> Post -> [ PostId ]
 postDependencies boardname post =
     flatten $ map
-        (eitherToMaybe . (parseQuoteLink boardname) . getQuoteStr)
-        -- this is wrong, a postpart can be nested
-        (filter isQuote $ postBody post)
+        (eitherToMaybe . (parseQuoteLink boardname))
+        (allQuoteStrings $ postBody post)
 
+    where
+        allQuoteStrings :: [ PostPart ] -> [ String ]
+        allQuoteStrings pps = pps >>= getQuoteStringsFromPart
+
+        getQuoteStringsFromPart :: PostPart -> [ String ]
+        getQuoteStringsFromPart (Quote s) = s : []
+        getQuoteStringsFromPart (GreenText pps) = allQuoteStrings pps
+        getQuoteStringsFromPart (OrangeText pps) = allQuoteStrings pps
+        getQuoteStringsFromPart (RedText pps) = allQuoteStrings pps
+        getQuoteStringsFromPart (Spoiler pps) = allQuoteStrings pps
+        getQuoteStringsFromPart (Bold pps) = allQuoteStrings pps
+        getQuoteStringsFromPart (Underlined pps) = allQuoteStrings pps
+        getQuoteStringsFromPart (Italics pps) = allQuoteStrings pps
+        getQuoteStringsFromPart (Strikethrough pps) = allQuoteStrings pps
+        getQuoteStringsFromPart _ = []
 
 eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe (Left _) = Nothing
 eitherToMaybe (Right x) = Just x
-
-
-getQuoteStr :: PostPart -> String
-getQuoteStr (Quote s) = s
-getQuoteStr _ = undefined
-
-
-isQuote :: PostPart -> Bool
-isQuote (Quote _) = True
-isQuote _ = False
-
 
 postsDeps :: String -> [[ Post ]] -> [ PostWithDeps ]
 postsDeps boardname posts = posts >>= procThread
@@ -170,19 +173,26 @@ mapPostQuoteLinks boardname newboardname pMap post =
     post { postBody = map f (postBody post) }
 
     where
-        -- TODO: wtf pattern match on p here for cleaner code!
-        f p =
-            if isQuote p
-            then
-                case getq p of
-                    Nothing -> p
-                    Just x ->
-                        let newPostId = Map.findWithDefault x x pMap
-                        in Quote $ renderPostIdAsQuote newPostId
-            else
-                p
+        f :: PostPart -> PostPart
+        f (Quote p) =
+            case getq p of
+                Nothing -> (Quote p)
+                Just x ->
+                    let newPostId = Map.findWithDefault x x pMap
+                    in Quote $ renderPostIdAsQuote newPostId
 
-        getq = eitherToMaybe . (parseQuoteLink boardname) . getQuoteStr
+        f (GreenText pps) = GreenText $ map f pps
+        f (OrangeText pps) = OrangeText $ map f pps
+        f (RedText pps) = RedText $ map f pps
+        f (Spoiler pps) = Spoiler $ map f pps
+        f (Bold pps) = Bold $ map f pps
+        f (Underlined pps) = Underlined $ map f pps
+        f (Italics pps) = Italics $ map f pps
+        f (Strikethrough pps) = Strikethrough $ map f pps
+
+        f x = x
+
+        getq = eitherToMaybe . (parseQuoteLink boardname)
 
         renderPostIdAsQuote :: PostId -> String
         renderPostIdAsQuote (qbname, i)
