@@ -4,12 +4,13 @@
 -- I don't consider this a hack, CookieJar should derive something like this already
 
 module Main
-    ( processThread
-    , main
+    ( main
     ) where
 
 import System.Environment (getArgs)
 import Data.ByteString (ByteString)
+import Data.Map (Map)
+import qualified Data.Map as Map
 import qualified Data.Text as Text
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Base64.URL as BSURL
@@ -60,24 +61,25 @@ import Network.HTTP.Req
     , Scheme (..)
     , HttpException (..)
     )
---import Debug.Trace (trace)
 
 import Types
     ( Post (..)
     , PostPart (..)
     , Attachment (..)
     , PostWithDeps
+    , PostId
     )
 import Pageparsers
     ( threadsInCatalog
     , lainchanFormParams
-    , lainchanFirstReply
+    -- , lainchanFirstReply
+    , lainchanPostNumbers
     , postsInThread
     , flatten
     , FormField (..)
     )
 import FSMemoize (fsmemoize)
-import Retopo (postsDeps, indexPosts, orderDeps)
+import Retopo (postsDeps, indexPosts, orderDeps, mapPostQuoteLinks)
 
 instance Serialize CookieJar where
     put c = put $ show c
@@ -95,11 +97,13 @@ lainchan_domain = "167.99.9.53"
 lainchan_base :: Url 'Http
 lainchan_base = http $ Text.pack lainchan_domain
 
+{-
 lainchan_b :: Url 'Http
 lainchan_b = lainchan_base /: "b" /: "index.html"
+-}
 
 lainchan_post_url :: Url 'Http
-lainchan_post_url = lainchan_base/: "post.php"
+lainchan_post_url = lainchan_base /: "post.php"
 
 bunkerchan_port :: Option scheme
 --bunkerchan_port = port 8080
@@ -113,6 +117,9 @@ bunkerchan_root = https "bunkerchan.xyz"
 
 bunkerchan_leftypol_catalog :: Url 'Https
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
+
+boardNameMap :: Map String String
+boardNameMap = Map.fromList [ ("leftypol", "b") ]
 
 httpConfig :: HttpConfig
 httpConfig = defaultHttpConfig { httpConfigBodyPreviewLength = 1024 * 5 }
@@ -176,7 +183,6 @@ urlToBS url params = BS.concat
 
 hashUrl :: Url scheme -> Option scheme -> String
 hashUrl url params = hash $ urlToBS url params
-
 
 fetchAndProcessPageData
     :: Maybe String
@@ -256,7 +262,7 @@ fetchBunkerchanPostsInThread datadir url params = do
 
 fetchLainchanFormPage :: Url a -> Option a -> IO ([ FormField ], CookieJar)
 fetchLainchanFormPage url params = do
-    e <- fetchAndProcessPageData Nothing process url params
+    e <- fetchAndProcessPageData Nothing lainchanFormParams url params
 
     case e of
         Left (ie, bs) -> do
@@ -266,14 +272,6 @@ fetchLainchanFormPage url params = do
             fetchLainchanFormPage url params
         Right x -> return x
             
-
-    where
-        process rawdoc = do
-            print $ renderParams params
-            putStrLn "parameters on this login page:"
-            existingParams <- lainchanFormParams rawdoc
-            --mapM_ putStrLn existingParams
-            return existingParams
 
 postLainchan
     :: Url a
@@ -358,11 +356,6 @@ requestPartFromAttachment i (a, m, bs) =
         fieldName 0 = "file"
         fieldName j = Text.pack $ "file" ++ show j
 
-{-
- - TODO:
- -      - post the posts in order, but then have to get the new post id and fix
- -      subsequent posts. Rewriting the body.
- -}
 
 fetchAttachments :: String ->  Post -> IO (Maybe (PostWithAttachments 'Https))
 fetchAttachments datadir post2 = do
@@ -371,14 +364,16 @@ fetchAttachments datadir post2 = do
             ( \a ->
                 let u = mkBnkrUrl $ prepareUrlStr $ attachmentUrl a
                 {-
-                 - TODO: Ban image urls here somewhere!
+                 - TODO:
                  -
-                 - Also the result of this "saved" will be a Maybe.
+                 - The result of this "saved" will be a Maybe.
                  - This needs to be zipped with the Attachments list in posts2
                  - Then return posts2 with the  attachments list filtered
                  - on the gotten attachment value not being Nothing
                  -
-                 - and the attachment list flattened (looks like it already is)
+                 - (basically keep the attachment metadata in post2 consistent
+                 - with what we can actually fetch, but this doesn't seem
+                 - to be important)
                  -}
                 in
                     (getFn u)
@@ -411,6 +406,7 @@ fetchAttachments datadir post2 = do
         prepareUrlStr = Text.pack . (drop 1)
 
 
+{-
 processThread :: String -> [ Post ] -> IO ()
 processThread datadir thread = do
     posts2a <- mapM (fetchAttachments datadir) thread
@@ -501,10 +497,94 @@ processThread datadir thread = do
         badFile "/.media/8745619976e83ad3ea484f2aa3507c4f-imagepng.png" = True
         badFile "/.media/52157a7ed00858d44ae0fab6a265bc27-imagepng.png" = True
         badFile _ = False
+-}
 
 
 mkUrl :: Url a -> Text.Text -> Url a
 mkUrl root = (foldl (/:) root) . (Text.splitOn "/")
+
+postOnLainchan
+    :: Bool
+    -> PostId
+    -> PostWithAttachments schema
+    -> IO HttpResponseWithMimeAndCookie
+postOnLainchan isOP (boardname, threadId) (post2, attch) = do
+    putStrLn $ "fetching form page " ++ referrerUrl
+    (ss, _) <- fetchLainchanFormPage formPageUrl mempty
+
+    putStrLn "Posting:"
+    putStrLn $ "isOP: " ++ show isOP
+    putStrLn $ renderPostBody $ postBody post2
+    print (postNumber post2, subject post2, attachments post2)
+
+    postLainchan
+        lainchan_post_url
+        (header "Referer" (BS.pack $ referrerUrl))
+        (post2, attch)
+        ss
+
+    where
+        formPageUrl = mkUrl lainchan_base $ Text.pack formPagePath
+
+        formPagePath =
+            if isOP
+            then newboardname ++ "/index.html"
+            else boardname ++ "/res/" ++ show threadId ++ ".html"
+
+        referrerUrl = "http://" ++ lainchan_domain ++ "/" ++ formPagePath
+
+        newboardname = boardNameMap Map.! boardname
+
+
+mainPostLoop :: String -> Map PostId PostId -> [ PostWithDeps ] -> IO ()
+mainPostLoop _ _ [] = return ()
+mainPostLoop datadir pMap ((post2, threadId, _):ps) = do
+    putStrLn " Fetch attachments"
+    mPwA <- fetchAttachments datadir post2
+    putStrLn " Fetch attachments OK"
+    let isOP = Map.notMember threadId pMap
+    let postFn = postOnLainchan isOP (if isOP then threadId else (pMap Map.! threadId))
+
+    case mPwA of
+        Just pwA -> do
+            putStrLn "calling postFn"
+            ok <- postFn (fixPost pwA)
+            case ok of
+                Left (ie, bs) -> do
+                        putStrLn $ "POST  failed! Status Code: " ++ show ie
+                        putStrLn $ show bs
+                        mainPostLoop datadir pMap ps
+                Right (_, rawreply, _) -> do
+                    putStrLn "Have raw reply from POST!"
+                    threadPosts <- lainchanPostNumbers rawreply
+
+                    let newpostnum =
+                            read $ (if isOP then head else last) threadPosts :: Int
+                        newpMap = Map.insert
+                            (boardname, postNumber post2)
+                            (newboardname, newpostnum)
+                            pMap
+                        newpMap2 =
+                            if isOP then
+                                Map.insert
+                                    threadId
+                                    (newboardname, newpostnum)
+                                    newpMap
+                            else newpMap
+                        in do
+                                putStrLn $ "old post num: " ++ show (postNumber post2)
+                                putStrLn $ "new post num: " ++ show newpostnum
+                                putStrLn "mainPostLoop looping"
+                                mainPostLoop datadir newpMap2 ps
+        Nothing -> mainPostLoop datadir pMap ps -- this means that we don't modify pMap
+
+    where
+        fixPost :: PostWithAttachments scheme -> PostWithAttachments scheme
+        fixPost (p, a) = (mapPostQuoteLinks boardname newboardname pMap p, a)
+
+        boardname = fst threadId
+
+        newboardname = boardNameMap Map.! boardname
 
 main :: IO ()
 main = do
@@ -534,17 +614,33 @@ main = do
 
     let orderedPosts = (orderDeps $ indexPosts $ postsDeps "leftypol" threads) :: [ PostWithDeps ]
 
-    mapM_ print orderedPosts
+    -- mapM_ print orderedPosts
 
-    -- type PostId = (String, Int) -- String is the board name
-    -- type PostWithDeps = (Post, PostId, [ PostId ]) -- post, thread identifier, dependencies ids
-    -- (orderDeps $ indexPosts $ postsDeps "leftypol" threads) :: [ PostWithDeps ]
-    --  - attachments are fetched first,
-    --  - then a suitable "polling url" is found by checking the thread map
-    --  - then fetching that page which i've called the "polling url" (to get form data)
-    --  - then posting to the right page with the right page data
+    mainPostLoop datadir Map.empty orderedPosts
 
-    --(printPostPartQuote "leftypol")
-    --(concat threads >>= postBody)
+    {-
+     - create mapP :: Map PostId PostId    -- (old post id -> new post id)
+     -
+     - mainPostLoop :: mapP -> [ post ] -> IO ()
+     -
+     - For each (post, thread) in orderedPosts:
+     -      - post is OP iff thread not in mapP
+     -
+     -      - set up postFn based on isOP, boardname, threadId
+     -
+     -      - fetch post attachments to get mPwA :: Maybe PostWithAttachments
+     -          case mPwA of
+     -              Nothing -> mainPostLoop mapP nextStuff 
+     -              Just pwA -> do
+     -                  ok <- postFn (fixPostQuoteLinks pwA mapP)
+     -                  case ok of
+     -                      Left (id, bs) -> do
+     -                          -- print error
+     -                          mainPostLoop mapP nextStuff 
+     -                      Right (_, rawreply, _) ->
+     -                          -- get the new post number
+     -                          -- add entry to mapP
+     -                          -- keep posting!
+     -}
 
     putStrLn "Done"

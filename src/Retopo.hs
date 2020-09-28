@@ -2,10 +2,11 @@ module Retopo
     ( indexPosts
     , postsDeps
     , orderDeps
+    , mapPostQuoteLinks
     ) where
 
 import Data.Map (Map, fromList, toList)
-import qualified Data.Map as Map (lookup)
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.List (foldl')
 import Text.Parsec.Pos (incSourceColumn)
@@ -88,17 +89,23 @@ postDependencies :: String -> Post -> [ PostId ]
 postDependencies boardname post =
     flatten $ map
         (eitherToMaybe . (parseQuoteLink boardname) . getQuoteStr)
-        (filter onlyQuote $ postBody post)
+        -- this is wrong, a postpart can be nested
+        (filter isQuote $ postBody post)
 
-    where
-        eitherToMaybe (Left _) = Nothing
-        eitherToMaybe (Right x) = Just x
 
-        getQuoteStr (Quote s) = s
-        getQuoteStr _ = undefined
+eitherToMaybe :: Either a b -> Maybe b
+eitherToMaybe (Left _) = Nothing
+eitherToMaybe (Right x) = Just x
 
-        onlyQuote (Quote _) = True
-        onlyQuote _ = False
+
+getQuoteStr :: PostPart -> String
+getQuoteStr (Quote s) = s
+getQuoteStr _ = undefined
+
+
+isQuote :: PostPart -> Bool
+isQuote (Quote _) = True
+isQuote _ = False
 
 
 postsDeps :: String -> [[ Post ]] -> [ PostWithDeps ]
@@ -156,3 +163,29 @@ orderDeps postsMap = snd $ foldl' foldfn (Set.empty, []) (toList postsMap)
                     )
 
         fetchMapDeps = flatten . map (\p -> Map.lookup p postsMap >>= return . ((,) p))
+
+-- TODO: go deeper into PostParts since the data structure is recursive
+mapPostQuoteLinks :: String -> String -> Map PostId PostId -> Post -> Post
+mapPostQuoteLinks boardname newboardname pMap post =
+    post { postBody = map f (postBody post) }
+
+    where
+        -- TODO: wtf pattern match on p here for cleaner code!
+        f p =
+            if isQuote p
+            then
+                case getq p of
+                    Nothing -> p
+                    Just x ->
+                        let newPostId = Map.findWithDefault x x pMap
+                        in Quote $ renderPostIdAsQuote newPostId
+            else
+                p
+
+        getq = eitherToMaybe . (parseQuoteLink boardname) . getQuoteStr
+
+        renderPostIdAsQuote :: PostId -> String
+        renderPostIdAsQuote (qbname, i)
+            | newboardname == qbname = ">>" ++ show i
+            | otherwise = ">>>/" ++ qbname ++ "/" ++ show i
+
