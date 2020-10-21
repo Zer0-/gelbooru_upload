@@ -167,7 +167,6 @@ orderDeps postsMap = snd $ foldl' foldfn (Set.empty, []) (toList postsMap)
 
         fetchMapDeps = flatten . map (\p -> Map.lookup p postsMap >>= return . ((,) p))
 
--- TODO: go deeper into PostParts since the data structure is recursive
 mapPostQuoteLinks :: String -> String -> Map PostId PostId -> Post -> Post
 mapPostQuoteLinks boardname newboardname pMap post =
     post { postBody = map f (postBody post) }

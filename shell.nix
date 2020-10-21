@@ -7,7 +7,7 @@ let
 
   f = { mkDerivation, base, stdenv, req, cabal-install,
         cryptohash-md5, base64-bytestring, hxt, hxt-css,
-        split, safe-exceptions, parsec
+        split, safe-exceptions, parsec, time
       }:
       mkDerivation {
         pname = "gelbooru-upload";

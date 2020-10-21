@@ -17,6 +17,7 @@ import qualified Data.ByteString.Base64.URL as BSURL
 import Data.Semigroup (Endo (..))
 import Data.Maybe (fromMaybe)
 import Data.Text.Encoding (encodeUtf8)
+import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
 import Control.Monad.IO.Class (liftIO)
 import Control.Exception.Safe (handle)
 import Data.Serialize (Serialize (..))
@@ -48,7 +49,7 @@ import Network.HTTP.Req
     , reqBodyMultipart
     , https
     , http
-    -- , port
+    , port
     , bsResponse
     , responseBody
     , responseHeader
@@ -91,8 +92,21 @@ type HttpResponseDat = (Maybe String, ByteString, CookieJar)
 type HttpResponseWithMimeAndCookie =
     Either (Int, Maybe ByteString) HttpResponseDat
 
+printTime :: String -> POSIXTime -> IO ()
+printTime name t = do
+    t2 <- getPOSIXTime
+    putStrLn $ "BLOCK " ++ name ++ " took " ++ show (dt t2) ++ " seconds to run"
+
+    where
+        dt :: POSIXTime -> Double
+        dt t2 = (realToFrac t2) - (realToFrac t)
+
 lainchan_domain :: String
-lainchan_domain = "167.99.9.53"
+-- lainchan_domain = "167.99.9.53"
+lainchan_domain = "192.168.4.6"
+
+lainchan_port :: Option scheme
+lainchan_port = port 8080
 
 lainchan_base :: Url 'Http
 lainchan_base = http $ Text.pack lainchan_domain
@@ -106,11 +120,11 @@ lainchan_post_url :: Url 'Http
 lainchan_post_url = lainchan_base /: "post.php"
 
 bunkerchan_port :: Option scheme
---bunkerchan_port = port 8080
+--bunkerchan_port = port 8081
 bunkerchan_port = mempty
 
 -- bunkerchan_root :: Url 'Http
--- bunkerchan_root = http "192.168.4.6" -- "127.0.0.1"
+-- bunkerchan_root = http "192.168.4.6"
 
 bunkerchan_root :: Url 'Https
 bunkerchan_root = https "bunkerchan.xyz"
@@ -236,7 +250,7 @@ fetchPostsFromBunkerCatalogPage datadir url params = do
             threadPaths <- threadsInCatalog rawdoc
             mapM_ putStrLn threadPaths
             putStrLn ""
-            return threadPaths
+            return $ take 10 threadPaths
 
 fetchBunkerchanPostsInThread :: Maybe String -> Url a -> Option a -> IO (Maybe [ Post ])
 fetchBunkerchanPostsInThread datadir url params = do
@@ -253,11 +267,11 @@ fetchBunkerchanPostsInThread datadir url params = do
     where
         process rawdoc = do
             --print $ renderParams params
-            putStrLn "posts in this thread:"
+            -- putStrLn "posts in this thread:"
             -- print rawdoc
             postss <- postsInThread rawdoc
-            mapM_ print postss
-            putStrLn ""
+            -- mapM_ print postss
+            -- putStrLn ""
             return postss
 
 fetchLainchanFormPage :: Url a -> Option a -> IO ([ FormField ], CookieJar)
@@ -281,6 +295,7 @@ postLainchan
     -> IO HttpResponseWithMimeAndCookie
 postLainchan u o ps ffs =
     handle handler $ runReq httpConfig $ do
+        -- payload <- reqBodyMultipart $ defaultParams ++ (mkLainchanPostParams ps)
         payload <- reqBodyMultipart $ defaultParams ++ (mkLainchanPostParams ps)
 
         r <- req
@@ -376,13 +391,18 @@ fetchAttachments datadir post2 = do
                  - to be important)
                  -}
                 in
-                    (getFn u)
+                    ( do
+                        t1 <- getPOSIXTime
+                        result <- getFn u
+                        printTime "ATTACHMENT" t1
+                        return result
+                    )
                     >>=
                     ((\p ->
                         case p of
-                            Left i -> do
-                                putStrLn $ "Could not fetch attachment " ++ show u
-                                    ++ " status code: " ++ show i
+                            Left (i, response) -> do
+                                putStrLn $ "[ATTACHMENT ERROR] Could not fetch attachment " ++ show u
+                                    ++ " status code: " ++ show i ++ " response:\n" ++ show response
                                 return Nothing
                             Right (m, b, _) -> return $ Just (u, m, b)
                     ) :: HttpResponseWithMimeAndCookie -> IO (Maybe (Url 'Https, Maybe String, ByteString)))
@@ -405,101 +425,6 @@ fetchAttachments datadir post2 = do
 
         prepareUrlStr = Text.pack . (drop 1)
 
-
-{-
-processThread :: String -> [ Post ] -> IO ()
-processThread datadir thread = do
-    posts2a <- mapM (fetchAttachments datadir) thread
-
-    let posts2 = filter dropUnknownFiles $ filter dropUnknownMime (flatten posts2a)
-
-    -- this just prints the thread
-    mapM_ (\(p, xs) -> do
-        print (postNumber p)
-        mapM_ (\(u, m, _) -> putStrLn $ " " ++ show (u, m)) xs
-        putStrLn "")
-        posts2
-
-    (ss, c) <- fetchLainchanFormPage
-        lainchan_b
-        mempty
-
-    putStrLn "current cookie jar:"
-    print c
-
-    -- what is ss? form field list aparantly. [ FormField ]
-    mapM_ print ss
-
-    case posts2 of
-        [] -> return ()
-        _ -> do
-            -- post OP
-
-            putStrLn "Posting OP:"
-            print $ (\(p, _) -> (postNumber p, subject p, attachments p)) (head posts2)
-
-            reply <- postLainchan
-                lainchan_post_url
-                (header "Referer" (BS.pack $ "http://" ++ lainchan_domain ++ "/b/index.html"))
-                (head posts2)
-                ss
-
-            case reply of
-                Left (ie, bs) -> do
-                        putStrLn $ "POST  failed! Status Code: " ++ show ie
-                        putStrLn $ show bs
-                        processThread datadir $ drop 1 thread
-                Right (_, rawreply, _) -> do
-                    threadUrlStr <- lainchanFirstReply rawreply
-
-                    putStrLn threadUrlStr
-
-                    mapM_
-                        ( \p -> do
-                            (ss2, _) <- fetchLainchanFormPage
-                                (mkUrl lainchan_base $ Text.pack (drop 1 threadUrlStr))
-                                mempty
-
-                            mapM_ print ss2
-
-                            putStrLn "Posting Reply:"
-                            print $ (\(p2, _) -> (postNumber p2, subject p2, attachments p2)) p
-
-                            result <- postLainchan
-                                lainchan_post_url
-                                (header "Referer" (BS.pack $ "http://" ++ lainchan_domain ++ threadUrlStr))
-                                p
-                                ss2
-
-                            case result of
-                                Left (ie, bs) -> do
-                                    putStrLn $ "POST  failed! Status Code: " ++ show ie
-                                    print bs
-                                    return ()
-                                Right _ -> return ()
-                        )
-                        (drop 1 posts2)
-
-    where
-        dropUnknownMime :: PostWithAttachments scheme -> Bool
-        dropUnknownMime (_, xs) = filter (\(_, m, _) -> badMime m) xs == []
-
-        {-
-        badMime (Just "video/mp4") = True
-        badMime (Just "video/webm") = True
-        -}
-        badMime _ = False
-
-        dropUnknownFiles :: PostWithAttachments scheme -> Bool
-        dropUnknownFiles (p, _) =
-            filter badFile (map attachmentUrl (attachments p)) == []
-
-        badFile "/.media/8745619976e83ad3ea484f2aa3507c4f-imagepng.png" = True
-        badFile "/.media/52157a7ed00858d44ae0fab6a265bc27-imagepng.png" = True
-        badFile _ = False
--}
-
-
 mkUrl :: Url a -> Text.Text -> Url a
 mkUrl root = (foldl (/:) root) . (Text.splitOn "/")
 
@@ -507,24 +432,45 @@ postOnLainchan
     :: Bool
     -> PostId
     -> PostWithAttachments schema
+    -> Maybe ByteString
     -> IO HttpResponseWithMimeAndCookie
-postOnLainchan isOP (boardname, threadId) (post2, attch) = do
+postOnLainchan isOP (boardname, threadId) (post2, attch) formPage = do
+    t1 <- getPOSIXTime
     putStrLn $ "fetching form page " ++ referrerUrl
-    (ss, _) <- fetchLainchanFormPage formPageUrl mempty
+    {-
+    ss <-
+        if isOP then getFormPage
+        else
+            case formPage of
+                Nothing -> getFormPage
+                Just (bs) -> do
+                    putStrLn "Not fetching form page again (using previous result)"
+                    lainchanFormParams bs
+    -}
+    printTime "FetchFormPage" t1
+    t2 <- getPOSIXTime
 
     putStrLn "Posting:"
     putStrLn $ "isOP: " ++ show isOP
     putStrLn $ renderPostBody $ postBody post2
     print (postNumber post2, subject post2, attachments post2)
+    putStrLn $ "referrerUrl: " ++ referrerUrl
 
-    postLainchan
+    result <- postLainchan
         lainchan_post_url
-        (header "Referer" (BS.pack $ referrerUrl))
+        (lainchan_port <> (header "Referer" (BS.pack $ referrerUrl)))
         (post2, attch)
-        ss
+        undefined
+        --ss
+
+    printTime "PostOnLainchan" t2
+    
+    return result
 
     where
         formPageUrl = mkUrl lainchan_base $ Text.pack formPagePath
+
+        getFormPage = fetchLainchanFormPage formPageUrl lainchan_port >>= return . fst
 
         formPagePath =
             if isOP
@@ -536,24 +482,25 @@ postOnLainchan isOP (boardname, threadId) (post2, attch) = do
         newboardname = boardNameMap Map.! boardname
 
 
-mainPostLoop :: String -> Map PostId PostId -> [ PostWithDeps ] -> IO ()
-mainPostLoop _ _ [] = return ()
-mainPostLoop datadir pMap ((post2, threadId, _):ps) = do
-    putStrLn " Fetch attachments"
+mainPostLoop :: String -> Map PostId PostId -> [ PostWithDeps ] -> Maybe ByteString -> IO ()
+mainPostLoop _ _ [] _ = return ()
+mainPostLoop datadir pMap ((post2, threadId, _):ps) prevResult = do
+    t1 <- getPOSIXTime
+    putStrLn "Fetch attachments"
     mPwA <- fetchAttachments datadir post2
-    putStrLn " Fetch attachments OK"
+    putStrLn "Fetch attachments OK"
     let isOP = Map.notMember threadId pMap
     let postFn = postOnLainchan isOP (if isOP then threadId else (pMap Map.! threadId))
 
     case mPwA of
         Just pwA -> do
             putStrLn "calling postFn"
-            ok <- postFn (fixPost pwA)
+            ok <- postFn (fixPost pwA) prevResult
             case ok of
                 Left (ie, bs) -> do
                         putStrLn $ "POST  failed! Status Code: " ++ show ie
                         putStrLn $ show bs
-                        mainPostLoop datadir pMap ps
+                        mainPostLoop datadir pMap ps Nothing
                 Right (_, rawreply, _) -> do
                     putStrLn "Have raw reply from POST!"
                     threadPosts <- lainchanPostNumbers rawreply
@@ -575,14 +522,18 @@ mainPostLoop datadir pMap ((post2, threadId, _):ps) = do
                                 putStrLn $ "old post num: " ++ show (postNumber post2)
                                 putStrLn $ "new post num: " ++ show newpostnum
                                 putStrLn "mainPostLoop looping"
-                                mainPostLoop datadir newpMap2 ps
-        Nothing -> mainPostLoop datadir pMap ps -- this means that we don't modify pMap
+                                printTime sectionName t1
+                                mainPostLoop datadir newpMap2 ps (Just rawreply)
+        Nothing -> printTime sectionName t1 >> mainPostLoop datadir pMap ps Nothing -- this means that we don't modify pMap
 
     where
         fixPost :: PostWithAttachments scheme -> PostWithAttachments scheme
         fixPost (p, a) = (mapPostQuoteLinks boardname newboardname pMap p, a)
 
         boardname = fst threadId
+
+        -- for debugging only:
+        sectionName = "MainPostLoop"
 
         newboardname = boardNameMap Map.! boardname
 
@@ -603,7 +554,7 @@ main = do
         Just threadPaths ->
             mapM
                 ( \u ->
-                    ((flip (fetchBunkerchanPostsInThread $ Just datadir)) bunkerchan_port) $
+                    ((flip (fetchBunkerchanPostsInThread (Just datadir))) bunkerchan_port) $
                         mkUrl bunkerchan_root u
                 )
                 (map (Text.pack . (drop 1)) $ reverse threadPaths)
@@ -616,7 +567,7 @@ main = do
 
     -- mapM_ print orderedPosts
 
-    mainPostLoop datadir Map.empty orderedPosts
+    mainPostLoop datadir Map.empty orderedPosts Nothing
 
     {-
      - create mapP :: Map PostId PostId    -- (old post id -> new post id)
