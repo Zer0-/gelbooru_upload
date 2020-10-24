@@ -129,11 +129,28 @@ bunkerchan_port = mempty
 bunkerchan_root :: Url 'Https
 bunkerchan_root = https "bunkerchan.xyz"
 
+{-
 bunkerchan_leftypol_catalog :: Url 'Https
 bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
+-}
+
+bunkerchan_catalog :: String -> Url 'Https
+bunkerchan_catalog bname = bunkerchan_root /: Text.pack bname /: "catalog.html"
 
 boardNameMap :: Map String String
-boardNameMap = Map.fromList [ ("leftypol", "b") ]
+boardNameMap = Map.fromList
+    [ ("leftypol", "b")
+    , ("b", "b_b")
+    , ("GET", "b_get")
+    , ("hobby", "b_hobby")
+    , ("games", "b_games")
+    , ("edu", "b_edu")
+    , ("anime", "b_anime")
+    , ("ref", "b_ref")
+    , ("tech", "b_tech")
+    , ("gulag", "b_gulag")
+    , ("dead", "b_dead")
+    ]
 
 httpConfig :: HttpConfig
 httpConfig = defaultHttpConfig { httpConfigBodyPreviewLength = 1024 * 5 }
@@ -250,7 +267,7 @@ fetchPostsFromBunkerCatalogPage datadir url params = do
             threadPaths <- threadsInCatalog rawdoc
             mapM_ putStrLn threadPaths
             putStrLn ""
-            return $ take 10 threadPaths
+            return threadPaths
 
 fetchBunkerchanPostsInThread :: Maybe String -> Url a -> Option a -> IO (Maybe [ Post ])
 fetchBunkerchanPostsInThread datadir url params = do
@@ -267,11 +284,11 @@ fetchBunkerchanPostsInThread datadir url params = do
     where
         process rawdoc = do
             --print $ renderParams params
-            -- putStrLn "posts in this thread:"
+            putStrLn "posts in this thread:"
             -- print rawdoc
             postss <- postsInThread rawdoc
-            -- mapM_ print postss
-            -- putStrLn ""
+            mapM_ print postss
+            putStrLn ""
             return postss
 
 fetchLainchanFormPage :: Url a -> Option a -> IO ([ FormField ], CookieJar)
@@ -295,7 +312,6 @@ postLainchan
     -> IO HttpResponseWithMimeAndCookie
 postLainchan u o ps ffs =
     handle handler $ runReq httpConfig $ do
-        -- payload <- reqBodyMultipart $ defaultParams ++ (mkLainchanPostParams ps)
         payload <- reqBodyMultipart $ defaultParams ++ (mkLainchanPostParams ps)
 
         r <- req
@@ -432,21 +448,22 @@ postOnLainchan
     :: Bool
     -> PostId
     -> PostWithAttachments schema
-    -> Maybe ByteString
+    -> Maybe (ByteString, PostId)
     -> IO HttpResponseWithMimeAndCookie
 postOnLainchan isOP (boardname, threadId) (post2, attch) formPage = do
     t1 <- getPOSIXTime
     putStrLn $ "fetching form page " ++ referrerUrl
-    {-
     ss <-
         if isOP then getFormPage
         else
             case formPage of
                 Nothing -> getFormPage
-                Just (bs) -> do
-                    putStrLn "Not fetching form page again (using previous result)"
-                    lainchanFormParams bs
-    -}
+                Just (bs, prevThreadId) ->
+                    if (prevThreadId /= (boardname, threadId)) then getFormPage
+                    else do
+                        putStrLn "Not fetching form page again (using previous result)"
+                        lainchanFormParams bs
+    -- (ss, _) <- fetchLainchanFormPage formPageUrl lainchan_port
     printTime "FetchFormPage" t1
     t2 <- getPOSIXTime
 
@@ -460,8 +477,7 @@ postOnLainchan isOP (boardname, threadId) (post2, attch) formPage = do
         lainchan_post_url
         (lainchan_port <> (header "Referer" (BS.pack $ referrerUrl)))
         (post2, attch)
-        undefined
-        --ss
+        ss
 
     printTime "PostOnLainchan" t2
     
@@ -482,7 +498,7 @@ postOnLainchan isOP (boardname, threadId) (post2, attch) formPage = do
         newboardname = boardNameMap Map.! boardname
 
 
-mainPostLoop :: String -> Map PostId PostId -> [ PostWithDeps ] -> Maybe ByteString -> IO ()
+mainPostLoop :: String -> Map PostId PostId -> [ PostWithDeps ] -> Maybe (ByteString, PostId) -> IO ()
 mainPostLoop _ _ [] _ = return ()
 mainPostLoop datadir pMap ((post2, threadId, _):ps) prevResult = do
     t1 <- getPOSIXTime
@@ -523,7 +539,7 @@ mainPostLoop datadir pMap ((post2, threadId, _):ps) prevResult = do
                                 putStrLn $ "new post num: " ++ show newpostnum
                                 putStrLn "mainPostLoop looping"
                                 printTime sectionName t1
-                                mainPostLoop datadir newpMap2 ps (Just rawreply)
+                                mainPostLoop datadir newpMap2 ps (Just (rawreply, threadId))
         Nothing -> printTime sectionName t1 >> mainPostLoop datadir pMap ps Nothing -- this means that we don't modify pMap
 
     where
@@ -541,12 +557,15 @@ main :: IO ()
 main = do
     args <- getArgs
     let datadir = head args
+    let datadir2 = head $ drop 1 args -- for attachments separately
+    let boardname = head $ drop 2 args
 
     putStrLn $ "datadir: " ++ datadir
 
     mThreadPaths <- fetchPostsFromBunkerCatalogPage
             (Just datadir)
-            bunkerchan_leftypol_catalog
+            --bunkerchan_leftypol_catalog
+            (bunkerchan_catalog boardname)
             bunkerchan_port
 
     threads1 <- case mThreadPaths of
@@ -563,11 +582,11 @@ main = do
 
     putStrLn $ "have " ++ (show $ length threads) ++ " threads!"
 
-    let orderedPosts = (orderDeps $ indexPosts $ postsDeps "leftypol" threads) :: [ PostWithDeps ]
+    let orderedPosts = (orderDeps $ indexPosts $ postsDeps boardname threads) :: [ PostWithDeps ]
 
     -- mapM_ print orderedPosts
 
-    mainPostLoop datadir Map.empty orderedPosts Nothing
+    mainPostLoop datadir2 Map.empty orderedPosts Nothing
 
     {-
      - create mapP :: Map PostId PostId    -- (old post id -> new post id)
