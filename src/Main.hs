@@ -139,17 +139,17 @@ bunkerchan_catalog bname = bunkerchan_root /: Text.pack bname /: "catalog.html"
 
 boardNameMap :: Map String String
 boardNameMap = Map.fromList
-    [ ("leftypol", "b")
-    , ("b", "b_b")
-    , ("GET", "b_get")
-    , ("hobby", "b_hobby")
-    , ("games", "b_games")
-    , ("edu", "b_edu")
-    , ("anime", "b_anime")
-    , ("ref", "b_ref")
-    , ("tech", "b_tech")
-    , ("gulag", "b_gulag")
-    , ("dead", "b_dead")
+    [ ("leftypol", "leftypol")
+    , ("b", "b")
+    , ("GET", "GET")
+    , ("hobby", "hobby")
+    , ("games", "games")
+    , ("edu", "edu")
+    , ("anime", "anime")
+    , ("ref", "ref")
+    , ("tech", "tech")
+    , ("gulag", "gulag")
+    , ("dead", "dead")
     ]
 
 httpConfig :: HttpConfig
@@ -539,7 +539,7 @@ mainPostLoop datadir pMap ((post2, threadId, _):ps) prevResult = do
                                 putStrLn $ "new post num: " ++ show newpostnum
                                 putStrLn "mainPostLoop looping"
                                 printTime sectionName t1
-                                mainPostLoop datadir newpMap2 ps (Just (rawreply, threadId))
+                                mainPostLoop datadir newpMap2 ps (Just (rawreply, (if isOP then threadId else (pMap Map.! threadId))))
         Nothing -> printTime sectionName t1 >> mainPostLoop datadir pMap ps Nothing -- this means that we don't modify pMap
 
     where
