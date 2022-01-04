@@ -119,23 +119,23 @@ lainchan_b = lainchan_base /: "b" /: "index.html"
 lainchan_post_url :: Url 'Http
 lainchan_post_url = lainchan_base /: "post.php"
 
-bunkerchan_port :: Option scheme
---bunkerchan_port = port 8081
-bunkerchan_port = mempty
+leftychan_port :: Option scheme
+--leftychan_port = port 8081
+leftychan_port = mempty
 
--- bunkerchan_root :: Url 'Http
--- bunkerchan_root = http "192.168.4.6"
+-- leftychan_root :: Url 'Http
+-- leftychan_root = http "192.168.4.6"
 
-bunkerchan_root :: Url 'Https
-bunkerchan_root = https "bunkerchan.xyz"
+leftychan_root :: Url 'Https
+leftychan_root = https "leftychan.net"
 
 {-
-bunkerchan_leftypol_catalog :: Url 'Https
-bunkerchan_leftypol_catalog = bunkerchan_root /: "leftypol" /: "catalog.html"
+leftychan_leftypol_catalog :: Url 'Https
+leftychan_leftypol_catalog = leftychan_root /: "leftypol" /: "catalog.html"
 -}
 
-bunkerchan_catalog :: String -> Url 'Https
-bunkerchan_catalog bname = bunkerchan_root /: Text.pack bname /: "catalog.html"
+leftychan_catalog :: String -> Url 'Https
+leftychan_catalog bname = leftychan_root /: Text.pack bname /: "catalog.html"
 
 boardNameMap :: Map String String
 boardNameMap = Map.fromList
@@ -245,12 +245,12 @@ fetchAndProcessPageData datadir process url params = do
     return (result, c)
     -}
 
-fetchPostsFromBunkerCatalogPage
+fetchPostsFromLeftychanCatalogPage
     :: Maybe String
     -> Url a
     -> Option a
     -> IO (Maybe [ String ])
-fetchPostsFromBunkerCatalogPage datadir url params = do
+fetchPostsFromLeftychanCatalogPage datadir url params = do
     e <- fetchAndProcessPageData datadir process url params
 
     case e of
@@ -269,8 +269,8 @@ fetchPostsFromBunkerCatalogPage datadir url params = do
             putStrLn ""
             return threadPaths
 
-fetchBunkerchanPostsInThread :: Maybe String -> Url a -> Option a -> IO (Maybe [ Post ])
-fetchBunkerchanPostsInThread datadir url params = do
+fetchLeftychanchanPostsInThread :: Maybe String -> Url a -> Option a -> IO (Maybe [ Post ])
+fetchLeftychanchanPostsInThread datadir url params = do
     e <- fetchAndProcessPageData datadir process url params
 
     case e of
@@ -435,9 +435,9 @@ fetchAttachments datadir post2 = do
     -- should be a post3 here
 
     where
-        getFn = (flip (cachedGetB datadir)) bunkerchan_port
+        getFn = (flip (cachedGetB datadir)) leftychan_port
 
-        mkBnkrUrl = mkUrl bunkerchan_root
+        mkBnkrUrl = mkUrl leftychan_root
 
         prepareUrlStr = Text.pack . (drop 1)
 
@@ -562,19 +562,19 @@ main = do
 
     putStrLn $ "datadir: " ++ datadir
 
-    mThreadPaths <- fetchPostsFromBunkerCatalogPage
+    mThreadPaths <- fetchPostsFromLeftychanCatalogPage
             (Just datadir)
-            --bunkerchan_leftypol_catalog
-            (bunkerchan_catalog boardname)
-            bunkerchan_port
+            --leftychan_leftypol_catalog
+            (leftychan_catalog boardname)
+            leftychan_port
 
     threads1 <- case mThreadPaths of
         Nothing -> return []
         Just threadPaths ->
             mapM
                 ( \u ->
-                    ((flip (fetchBunkerchanPostsInThread (Just datadir))) bunkerchan_port) $
-                        mkUrl bunkerchan_root u
+                    ((flip (fetchLeftychanchanPostsInThread (Just datadir))) leftychan_port) $
+                        mkUrl leftychan_root u
                 )
                 (map (Text.pack . (drop 1)) $ reverse threadPaths)
 
@@ -588,29 +588,11 @@ main = do
 
     mainPostLoop datadir2 Map.empty orderedPosts Nothing
 
-    {-
-     - create mapP :: Map PostId PostId    -- (old post id -> new post id)
-     -
-     - mainPostLoop :: mapP -> [ post ] -> IO ()
-     -
-     - For each (post, thread) in orderedPosts:
-     -      - post is OP iff thread not in mapP
-     -
-     -      - set up postFn based on isOP, boardname, threadId
-     -
-     -      - fetch post attachments to get mPwA :: Maybe PostWithAttachments
-     -          case mPwA of
-     -              Nothing -> mainPostLoop mapP nextStuff 
-     -              Just pwA -> do
-     -                  ok <- postFn (fixPostQuoteLinks pwA mapP)
-     -                  case ok of
-     -                      Left (id, bs) -> do
-     -                          -- print error
-     -                          mainPostLoop mapP nextStuff 
-     -                      Right (_, rawreply, _) ->
-     -                          -- get the new post number
-     -                          -- add entry to mapP
-     -                          -- keep posting!
-     -}
-
     putStrLn "Done"
+
+
+-- What Do?
+--  - rename bunkerchan to leftychan. that's the target site ✓
+--  - download catalog?
+--      - print what?
+--          - list of thread ids would be nice.

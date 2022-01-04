@@ -21,7 +21,7 @@ let
         ];
         testHaskellDepends = [ cabal-install ];
         license = "unknown";
-        hydraPlatforms = stdenv.lib.platforms.none;
+        #hydraPlatforms = stdenv.lib.platforms.none;
       };
 
   haskellPackages = if compiler == "default"

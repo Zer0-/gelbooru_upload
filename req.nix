@@ -2,7 +2,7 @@
 
 let
 
-  inherit (nixpkgs) pkgs;
+  #inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson, authenticate-oauth, base
       , blaze-builder, bytestring, case-insensitive, connection, hspec
@@ -31,14 +31,14 @@ let
         doCheck = false;
         homepage = "https://github.com/mrkkrp/req";
         description = "Easy-to-use, type-safe, expandable, high-level HTTP client library";
-        license = stdenv.lib.licenses.bsd3;
+        license = nixpkgs.lib.licenses.bsd3;
       };
 
   haskellPackages = if compiler == "default"
-                       then pkgs.haskellPackages
-                       else pkgs.haskell.packages.${compiler};
+                       then nixpkgs.haskellPackages
+                       else nixpkgs.haskell.packages.${compiler};
 
-  variant = if doBenchmark then pkgs.haskell.lib.doBenchmark else pkgs.lib.id;
+  variant = if doBenchmark then nixpkgs.haskell.lib.doBenchmark else nixpkgs.lib.id;
 
   drv = variant (haskellPackages.callPackage f {});
 
