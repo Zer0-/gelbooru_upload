@@ -1,5 +1,7 @@
 module Types where
 
+import Data.Time.Clock (UTCTime)
+
 data Attachment = Attachment
     { attachmentFilename :: String
     , attachmentUrl :: String
@@ -30,6 +32,7 @@ data Post = Post
     , name :: String
     , postNumber :: Int
     , postBody :: [ PostPart ]
+    , timestamp :: UTCTime
     } deriving Show
 
 type PostId = (String, Int) -- String is the board name

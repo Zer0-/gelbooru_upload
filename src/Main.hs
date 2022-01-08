@@ -262,6 +262,7 @@ fetchPostsFromLeftychanCatalogPage datadir url params = do
 
     where
         process rawdoc = do
+            print rawdoc
             print $ renderParams params
             putStrLn "threads on this catalog page:"
             threadPaths <- threadsInCatalog rawdoc
@@ -284,7 +285,7 @@ fetchLeftychanchanPostsInThread datadir url params = do
     where
         process rawdoc = do
             --print $ renderParams params
-            putStrLn "posts in this thread:"
+            putStrLn $ "posts in this thread (" ++ show url ++ "):"
             -- print rawdoc
             postss <- postsInThread rawdoc
             mapM_ print postss
@@ -580,19 +581,14 @@ main = do
 
     let threads = (flatten threads1) :: [[ Post ]] -- ✓
 
+    --mapM_ (mapM_ (putStrLn . show)) threads1
+
     putStrLn $ "have " ++ (show $ length threads) ++ " threads!"
 
-    let orderedPosts = (orderDeps $ indexPosts $ postsDeps boardname threads) :: [ PostWithDeps ]
+    -- let orderedPosts = (orderDeps $ indexPosts $ postsDeps boardname threads) :: [ PostWithDeps ]
 
-    -- mapM_ print orderedPosts
+    -- -- mapM_ print orderedPosts
 
-    mainPostLoop datadir2 Map.empty orderedPosts Nothing
+    -- mainPostLoop datadir2 Map.empty orderedPosts Nothing
 
-    putStrLn "Done"
-
-
--- What Do?
---  - rename bunkerchan to leftychan. that's the target site ✓
---  - download catalog?
---      - print what?
---          - list of thread ids would be nice.
+    -- putStrLn "Done"
