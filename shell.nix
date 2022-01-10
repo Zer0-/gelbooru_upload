@@ -7,7 +7,8 @@ let
 
   f = { mkDerivation, base, stdenv, req, cabal-install,
         cryptohash-md5, base64-bytestring, hxt, hxt-css,
-        split, safe-exceptions, parsec, time, iso8601-time
+        split, safe-exceptions, parsec, time, iso8601-time,
+        aeson
       }:
       mkDerivation {
         pname = "gelbooru-upload";
@@ -17,7 +18,7 @@ let
         isExecutable = true;
         executableHaskellDepends = [
           base req cryptohash-md5 base64-bytestring hxt hxt-css split
-          safe-exceptions parsec iso8601-time
+          safe-exceptions parsec iso8601-time aeson
         ];
         testHaskellDepends = [ cabal-install ];
         license = "unknown";
