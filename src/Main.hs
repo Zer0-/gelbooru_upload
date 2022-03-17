@@ -7,17 +7,21 @@ module Main
     ( main
     ) where
 
+import Prelude hiding (writeFile)
 import System.Environment (getArgs)
-import Data.ByteString (ByteString)
+import Data.ByteString (ByteString, writeFile)
+import qualified Data.ByteString.Base16 as Base16
 import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Text as Text
+import qualified Data.Text.Encoding as Text
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Base64.URL as BSURL
 import Data.Semigroup (Endo (..))
 import Data.Maybe (fromMaybe)
 import Data.Text.Encoding (encodeUtf8)
-import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
+import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime, posixSecondsToUTCTime)
+import Data.Time.Clock (UTCTime, diffTimeToPicoseconds, diffUTCTime)
 import Control.Monad.IO.Class (liftIO)
 import Control.Exception.Safe (handle)
 import Data.Serialize (Serialize (..))
@@ -67,6 +71,8 @@ import Network.HTTP.Req
     )
 import Data.Aeson
     ( Value
+    , object
+    , (.=)
     )
 
 import Types
@@ -436,11 +442,32 @@ fetchAttachments datadir post2 = do
 mkUrl :: Url a -> Text.Text -> Url a
 mkUrl root = (foldl (/:) root) . (Text.splitOn "/")
 
-postToSpamNoticer :: PostWithAttachments scheme -> IO SpamNoticerResponse
-postToSpamNoticer (post, attachments) =
-    -- handle spamExceptionHandler $ runReq httpConfig $ do
-    runReq httpConfig $ do
-        let payload = undefined
+utcTimeToSeconds :: UTCTime -> Integer
+utcTimeToSeconds t = 
+    diffTimeToPicoseconds (realToFrac (diffUTCTime t epoch))
+    `div`
+    (1000000 * 1000 * 1000)
+
+    where
+        epoch = posixSecondsToUTCTime 0
+
+postToSpamNoticer
+    :: String
+    -> PostWithAttachments scheme
+    -> IO SpamNoticerResponse
+postToSpamNoticer datadir (post, attachments) = do
+    attachment_objs <- mapM attachmentObj attachments
+
+    let payload = object
+            [ "time_stamp" .= (utcTimeToSeconds $ timestamp post)
+            , "body" .= (renderPostBody $ postBody post)
+            , "attachments" .= attachment_objs
+            ]
+
+    putStrLn "PAYLOAD:"
+    print payload
+
+    handle spamExceptionHandler $ runReq httpConfig $ do
 
         r <- req
             POST
@@ -453,6 +480,30 @@ postToSpamNoticer (post, attachments) =
             200 -> liftIO $ return $ Right $ responseBody r
             e   -> error $ "Upload failed! result code " ++ show e
 
+    where
+        attachmentObj :: (Url scheme, Maybe String, ByteString) -> IO Value
+        attachmentObj (_, maybe_mime, bs) = do
+            let md5sum = encodeHex $ MD5.hash bs
+
+            let filename = datadir ++ "/" ++ Text.unpack md5sum ++ ".attachment"
+
+            writeFile filename bs
+
+            return $ object
+                [ "mimetype" .= (mimetype maybe_mime)
+                , "md5_hash" .= md5sum
+                , "filename" .= filename
+                ]
+
+        mimetype :: Maybe String -> String
+        mimetype (Just m) = m
+        mimetype Nothing = "application/octet-stream"
+
+        
+encodeHex :: ByteString -> Text.Text
+encodeHex bs =
+    Text.decodeUtf8 (Base16.encode bs)
+
 
 mainPostLoop :: String -> [ PostWithDeps ] -> IO ()
 mainPostLoop _ [] = return ()
@@ -461,7 +512,7 @@ mainPostLoop datadir ((post2, threadId, _):ps) = do
     putStrLn "Fetch attachments"
     mPwA <- fetchAttachments datadir post2
     putStrLn "Fetch attachments OK"
-    let postFn = postToSpamNoticer
+    let postFn = postToSpamNoticer datadir
 
     case mPwA of
         Just pwA -> do
