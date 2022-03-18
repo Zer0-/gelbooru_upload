@@ -2,11 +2,8 @@
 
 module Pageparsers
     ( threadsInCatalog
-    , lainchanFormParams
-    , lainchanPostNumbers
     , postsInThread
     , flatten
-    , FormField (..)
     ) where
 
 import Text.XML.HXT.Core
@@ -51,65 +48,11 @@ flatten = (=<<) (maybe [] (: []))
 
 type Doc a = IOSLA (XIOState ()) XmlTree a
 
-data FormField = FormField
-    { fieldName :: String
-    , fieldValue :: String
-    } deriving Show
-
 mkdoc :: ByteString -> Doc XmlTree
 mkdoc
     = (readString [ withParseHTML yes, withWarnings no])
     . (unpack . decodeUtf8)
 
-
-lainchanFormParams :: ByteString -> IO [ FormField ]
-lainchanFormParams rawdoc = do
-    as <- runX $ mkdoc rawdoc
-        >>> css "form[name=post] input"
-        >>> parseFormField
-
-    bs <- runX $ mkdoc rawdoc
-        >>> css "form[name=post] textarea"
-        >>> parseTextAreaFormField
-
-    return $ as ++ bs
-
-{-
-lainchanFirstReply :: ByteString -> IO String
-lainchanFirstReply rawdoc = do
-    as <- runX $ mkdoc rawdoc
-        >>> css ".thread .intro a:not([class])" >>> getAttrValue "href"
-
-    return $ head as
--}
-
-lainchanPostNumbers :: ByteString -> IO [ String ]
-lainchanPostNumbers rawdoc = do
-    runX $ mkdoc rawdoc
-        >>> css ".thread:first-of-type .post .intro .post_no:not([id])"
-        >>> getChildren >>> getText
-
-parseFormField :: Doc FormField
-parseFormField =
-    proc l -> do
-        nameField <- getAttrValue "name" -< l
-        valueField <- getAttrValue "value" -< l
-
-        returnA -< FormField
-            { fieldName = nameField
-            , fieldValue = valueField
-            }
-
-parseTextAreaFormField :: Doc FormField
-parseTextAreaFormField =
-    proc l -> do
-        nameField <- getAttrValue "name" -< l
-        valueField <- withDefault (getChildren >>> getText) "" -< l
-
-        returnA -< FormField
-            { fieldName = nameField
-            , fieldValue = valueField
-            }
 
 threadsInCatalog :: ByteString -> IO [ String ]
 threadsInCatalog rawdoc =

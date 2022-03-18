@@ -3,7 +3,7 @@ module FSMemoize
     ) where
 
 import Prelude hiding (readFile, writeFile)
-import System.FilePath (FilePath, (</>))
+import System.FilePath ((</>))
 import System.Directory (doesFileExist)
 import Data.Serialize (Serialize, encode, decode)
 import Data.ByteString (readFile, writeFile)

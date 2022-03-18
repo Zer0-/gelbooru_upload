@@ -11,37 +11,25 @@ import Prelude hiding (writeFile)
 import System.Environment (getArgs)
 import Data.ByteString (ByteString, writeFile)
 import qualified Data.ByteString.Base16 as Base16
-import Data.Map (Map)
-import qualified Data.Map as Map
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Base64.URL as BSURL
 import Data.Semigroup (Endo (..))
-import Data.Maybe (fromMaybe)
-import Data.Text.Encoding (encodeUtf8)
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime, posixSecondsToUTCTime)
 import Data.Time.Clock (UTCTime, diffTimeToPicoseconds, diffUTCTime)
 import Control.Monad.IO.Class (liftIO)
 import Control.Exception.Safe (handle)
 import Data.Serialize (Serialize (..))
 import qualified Crypto.Hash.MD5 as MD5
-import Control.Concurrent (threadDelay)
 import qualified Network.HTTP.Client as HTTP
 import Network.HTTP.Client
     ( defaultRequest
     , CookieJar
-    , RequestBody (RequestBodyBS)
     , responseStatus
     )
 import Network.HTTP.Types (renderQuery, queryTextToQuery)
 import Network.HTTP.Types.Status (Status (statusCode))
-import Network.HTTP.Client.MultipartFormData
-    ( partBS
-    , partContentType
-    , partFileRequestBody
-    , Part
-    )
 
 import Network.HTTP.Req
     ( runReq
@@ -51,7 +39,6 @@ import Network.HTTP.Req
     , GET (..)
     , POST (..)
     , NoReqBody (..)
-    , reqBodyMultipart
     , ReqBodyJson (..)
     , https
     , http
@@ -62,7 +49,6 @@ import Network.HTTP.Req
     , responseHeader
     , responseStatusCode
     , responseCookieJar
-    , header
     , (/:)
     , Option (Option)
     , Url
@@ -80,19 +66,14 @@ import Types
     , PostPart (..)
     , Attachment (..)
     , PostWithDeps
-    , PostId
     )
 import Pageparsers
     ( threadsInCatalog
-    , lainchanFormParams
-    -- , lainchanFirstReply
-    , lainchanPostNumbers
     , postsInThread
     , flatten
-    , FormField (..)
     )
 import FSMemoize (fsmemoize)
-import Retopo (postsDeps, indexPosts, orderDeps, mapPostQuoteLinks)
+import Retopo (postsDeps, indexPosts, orderDeps)
 
 instance Serialize CookieJar where
     put c = put $ show c
@@ -115,24 +96,6 @@ printTime name t = do
     where
         dt :: POSIXTime -> Double
         dt t2 = (realToFrac t2) - (realToFrac t)
-
-lainchan_domain :: String
--- lainchan_domain = "167.99.9.53"
-lainchan_domain = "192.168.4.6"
-
-lainchan_port :: Option scheme
-lainchan_port = port 8080
-
-lainchan_base :: Url 'Http
-lainchan_base = http $ Text.pack lainchan_domain
-
-{-
-lainchan_b :: Url 'Http
-lainchan_b = lainchan_base /: "b" /: "index.html"
--}
-
-lainchan_post_url :: Url 'Http
-lainchan_post_url = lainchan_base /: "post.php"
 
 spam_url_base :: Url 'Http
 spam_url_base = http $ Text.pack "127.0.0.1"
@@ -157,21 +120,6 @@ leftychan_leftypol_catalog = leftychan_root /: "leftypol" /: "catalog.html"
 
 leftychan_catalog :: String -> Url 'Https
 leftychan_catalog bname = leftychan_root /: Text.pack bname /: "catalog.html"
-
-boardNameMap :: Map String String
-boardNameMap = Map.fromList
-    [ ("leftypol", "leftypol")
-    , ("b", "b")
-    , ("GET", "GET")
-    , ("hobby", "hobby")
-    , ("games", "games")
-    , ("edu", "edu")
-    , ("anime", "anime")
-    , ("ref", "ref")
-    , ("tech", "tech")
-    , ("gulag", "gulag")
-    , ("dead", "dead")
-    ]
 
 httpConfig :: HttpConfig
 httpConfig = defaultHttpConfig { httpConfigBodyPreviewLength = 1024 * 5 }
@@ -325,36 +273,6 @@ fetchLeftychanchanPostsInThread datadir url params = do
             putStrLn ""
             return postss
 
-fetchLainchanFormPage :: Url a -> Option a -> IO ([ FormField ], CookieJar)
-fetchLainchanFormPage url params = do
-    e <- fetchAndProcessPageData Nothing lainchanFormParams url params
-
-    case e of
-        Left (ie, bs) -> do
-            putStrLn $ "GET form page " ++ show url ++ " failed! waiting and retrying."
-            putStrLn $ "Status Code: " ++ show ie ++ " \n" ++ show bs
-            threadDelay $ 5 * (1000 * 1000)
-            fetchLainchanFormPage url params
-        Right x -> return x
-            
-
-mkLainchanPostParams :: PostWithAttachments scheme -> [ Part ]
-mkLainchanPostParams (p, xs) =
-    (map (uncurry requestPartFromAttachment) (zip [0..] xs2)) ++
-    [ partBS "name" $ encodeUtf8 $ Text.pack $ name p
-    , partBS "email" $ encodeUtf8 $ Text.pack $ take 30 $ fromMaybe "" $ email p
-    , partBS "subject" $ encodeUtf8 $ Text.pack $ fromMaybe "" $ subject p
-    , partBS "body" $ encodeUtf8 $ Text.pack $ renderPostBody $ postBody p
-    ]
-
-     where
-        xs2 = map (\(a, (_, b, c)) -> (a, b, c)) (zip (attachments p) xs)
-
-
-formFieldToParam :: FormField -> Part
-formFieldToParam (FormField { fieldName, fieldValue }) =
-    partBS (Text.pack fieldName) $ encodeUtf8 $ Text.pack fieldValue
-
 renderPostBody :: [ PostPart ] -> String
 renderPostBody = ((=<<) :: (PostPart -> String) -> [ PostPart ] ->  String) renderPart
     where
@@ -372,19 +290,6 @@ renderPostBody = ((=<<) :: (PostPart -> String) -> [ PostPart ] ->  String) rend
         renderPart (Underlined ps)    = "[b]" ++ (ps >>= renderPart) ++ "[/b]"
         renderPart (Italics ps)       = "''" ++ (ps >>= renderPart) ++ "''"
         renderPart (Strikethrough ps) = "[i]" ++ (ps >>= renderPart) ++ "[/i]"
-
-requestPartFromAttachment :: Int -> (Attachment, Maybe String, ByteString) -> Part
-requestPartFromAttachment i (a, m, bs) =
-    ( partFileRequestBody
-        (fieldName i)
-        (attachmentFilename a)
-        (RequestBodyBS bs)
-    ) { partContentType = m >>= Just . BS.pack }
-
-    where
-        fieldName 0 = "file"
-        fieldName j = Text.pack $ "file" ++ show j
-
 
 fetchAttachments :: String ->  Post -> IO (Maybe (PostWithAttachments 'Https))
 fetchAttachments datadir post2 = do
@@ -507,7 +412,7 @@ encodeHex bs =
 
 mainPostLoop :: String -> [ PostWithDeps ] -> IO ()
 mainPostLoop _ [] = return ()
-mainPostLoop datadir ((post2, threadId, _):ps) = do
+mainPostLoop datadir ((post2, _ {- thread id -}, _):ps) = do
     t1 <- getPOSIXTime
     putStrLn "Fetch attachments"
     mPwA <- fetchAttachments datadir post2
