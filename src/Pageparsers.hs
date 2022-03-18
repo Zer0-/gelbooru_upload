@@ -121,7 +121,7 @@ parseOP =
         timeField <- css ".post.op time" >>> getAttrValue "datetime" -< l
 
         returnA -< Post
-            { attachments = map (\(f, u) -> Attachment f u) attachmentUrls
+            { attachments = map (\(f, (u, t)) -> Attachment f u t) attachmentUrls
             , subject = opSubjectField
             , email = emailField
             , name = nameField
@@ -146,6 +146,7 @@ parseOP =
             = css ".post_anchor ~ .files .file"
             >>> ( (css ".fileinfo .details .postfilename" >>> getChildren >>> getText)
                 &&& (css ".fileinfo > a" >>> getAttrValue "href")
+                &&& (withDefault (css ".post-image" >>> getAttrValue "src" >>> arr Just) Nothing)
                 )
 
 parsePost :: Doc Post
@@ -161,7 +162,7 @@ parsePost =
         postParts <- withDefault getBody [] -< l
 
         returnA -< Post
-            { attachments = map (\(f, u) -> Attachment f u) attachmentUrls
+            { attachments = map (\(f, (u, t)) -> Attachment f u t) attachmentUrls
             , subject = subjectField
             , email = emailField
             , name = nameField
@@ -188,6 +189,7 @@ parsePost =
             = css ".file"
             >>> ( (css ".fileinfo .details .postfilename" >>> getChildren >>> getText)
                 &&& (css ".fileinfo > a" >>> getAttrValue "href")
+                &&& (withDefault (css ".post-image" >>> getAttrValue "src" >>> arr Just) Nothing)
                 )
 
 
