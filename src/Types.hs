@@ -5,7 +5,7 @@ import Data.Time.Clock (UTCTime)
 data Attachment = Attachment
     { attachmentFilename :: String
     , attachmentUrl :: String
-    , thumbnailUrl :: Maybe String
+    , thumbnailUrl :: String
     } deriving Show
 
 data PostPart

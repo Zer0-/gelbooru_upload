@@ -146,7 +146,7 @@ parseOP =
             = css ".post_anchor ~ .files .file"
             >>> ( (css ".fileinfo .details .postfilename" >>> getChildren >>> getText)
                 &&& (css ".fileinfo > a" >>> getAttrValue "href")
-                &&& (withDefault (css ".post-image" >>> getAttrValue "src" >>> arr Just) Nothing)
+                &&& (css ".post-image" >>> getAttrValue "src")
                 )
 
 parsePost :: Doc Post
@@ -189,7 +189,7 @@ parsePost =
             = css ".file"
             >>> ( (css ".fileinfo .details .postfilename" >>> getChildren >>> getText)
                 &&& (css ".fileinfo > a" >>> getAttrValue "href")
-                &&& (withDefault (css ".post-image" >>> getAttrValue "src" >>> arr Just) Nothing)
+                &&& (css ".post-image" >>> getAttrValue "src")
                 )
 
 
