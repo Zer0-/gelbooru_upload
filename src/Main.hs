@@ -79,7 +79,7 @@ instance Serialize CookieJar where
     put c = put $ show c
     get = get >>= return . read
 
-type PostWithAttachments scheme = (Post, [ (Url scheme, Maybe String, ByteString) ])
+type PostWithAttachments scheme = (Post, [ (Attachment, (Url scheme, Maybe String, ByteString)) ])
 
 type HttpResponseDat = (Maybe String, ByteString, CookieJar)
 type HttpResponseWithMimeAndCookie =
@@ -323,8 +323,8 @@ fetchAttachments datadir post2 = do
                                 putStrLn $ "[ATTACHMENT ERROR] Could not fetch attachment " ++ show u
                                     ++ " status code: " ++ show i ++ " response:\n" ++ show response
                                 return Nothing
-                            Right (m, b, _) -> return $ Just (u, m, b)
-                    ) :: HttpResponseWithMimeAndCookie -> IO (Maybe (Url 'Https, Maybe String, ByteString)))
+                            Right (m, b, _) -> return $ Just (a, (u, m, b))
+                    ) :: HttpResponseWithMimeAndCookie -> IO (Maybe (Attachment, (Url 'Https, Maybe String, ByteString))))
                     -- >>= \(m, b, _) -> return (u, m, b)
             )
             (attachments post2)
@@ -386,8 +386,8 @@ postToSpamNoticer datadir (post, attachments) = do
             e   -> error $ "Upload failed! result code " ++ show e
 
     where
-        attachmentObj :: (Url scheme, Maybe String, ByteString) -> IO Value
-        attachmentObj (_, maybe_mime, bs) = do
+        attachmentObj :: (Attachment, (Url scheme, Maybe String, ByteString)) -> IO Value
+        attachmentObj (a, (_, maybe_mime, bs)) = do
             let md5sum = encodeHex $ MD5.hash bs
 
             let filename = datadir ++ "/" ++ Text.unpack md5sum ++ ".attachment"
@@ -398,6 +398,7 @@ postToSpamNoticer datadir (post, attachments) = do
                 [ "mimetype" .= (mimetype maybe_mime)
                 , "md5_hash" .= md5sum
                 , "filename" .= filename
+                , "thumbnail_url" .= thumbnailUrl a
                 ]
 
         mimetype :: Maybe String -> String
@@ -474,4 +475,30 @@ main = do
 
     mainPostLoop datadir2 orderedPosts
 
-    -- putStrLn "Done"
+    putStrLn "Done"
+
+
+{-
+ -
+ - Since uploading leftypol took 9h (which averages about .8 posts per second, which is actually a decent rate)
+ - we can truncate the size of the "recent text posts" table, and try to get this to run in under
+ - a certain time?
+ -
+ - why the time constraints?
+ -      - it keeps data safe. Board data needs to be able to move freely, and if it has to pass through
+ -      the spamfilter it shouldn't be hindered. Though in that case, fuck the filter.
+ -      - what is fast enough?
+ - need to fix 500 error found in /tmp/asdf.txt
+ -      - what are we posting that results in a 500 error from spamnoticer?
+ -      - did the optional argument we passed to web.Application help?
+ -
+ - need to get rid of false positives
+ -      - simply turn down the rate for text posts
+ - need to investigate if any of the "potential" negatives (things that had 6
+ - occurrences) need to be noticed, and if so, the rate function should be
+ - tweaked.
+ -      - plot some time series of similar posts to see if this is a problem,
+ -      it could help to visualize it
+ - need to write a UI
+ - need to integrate with the board software via REST
+ -}
