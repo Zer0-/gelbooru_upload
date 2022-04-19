@@ -54,6 +54,7 @@ import Network.HTTP.Req
     , Url
     , Scheme (..)
     , HttpException (..)
+    , renderUrl
     )
 import Data.Aeson
     ( Value
@@ -296,7 +297,7 @@ fetchAttachments datadir post2 = do
     saved <-
         ( mapM
             ( \a ->
-                let u = mkBnkrUrl $ prepareUrlStr $ attachmentUrl a
+                let u = (mkUrl leftychan_root) $ prepareUrlStr $ attachmentUrl a
                 {-
                  - TODO:
                  -
@@ -339,8 +340,6 @@ fetchAttachments datadir post2 = do
 
     where
         getFn = (flip (cachedGetB datadir)) leftychan_port
-
-        mkBnkrUrl = mkUrl leftychan_root
 
         prepareUrlStr = Text.pack . (drop 1)
 
@@ -398,7 +397,7 @@ postToSpamNoticer datadir (post, attachments) = do
                 [ "mimetype" .= (mimetype maybe_mime)
                 , "md5_hash" .= md5sum
                 , "filename" .= filename
-                , "thumbnail_url" .= thumbnailUrl a
+                , "thumbnail_url" .= (renderUrl $ mkUrl leftychan_root $ Text.pack $ thumbnailUrl a)
                 ]
 
         mimetype :: Maybe String -> String
@@ -473,7 +472,7 @@ main = do
 
     -- mapM_ print orderedPosts
 
-    mainPostLoop datadir2 orderedPosts
+    mainPostLoop datadir2 (take 1 orderedPosts)
 
     putStrLn "Done"
 
