@@ -15,7 +15,6 @@ import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Base64.URL as BSURL
-import Data.Semigroup (Endo (..))
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime, posixSecondsToUTCTime)
 import Data.Time.Clock (UTCTime, diffTimeToPicoseconds, diffUTCTime)
 import Control.Monad.IO.Class (liftIO)
@@ -24,8 +23,7 @@ import Data.Serialize (Serialize (..))
 import qualified Crypto.Hash.MD5 as MD5
 import qualified Network.HTTP.Client as HTTP
 import Network.HTTP.Client
-    ( defaultRequest
-    , CookieJar
+    ( CookieJar
     , responseStatus
     )
 import Network.HTTP.Types (renderQuery, queryTextToQuery)
@@ -50,11 +48,12 @@ import Network.HTTP.Req
     , responseStatusCode
     , responseCookieJar
     , (/:)
-    , Option (Option)
     , Url
     , Scheme (..)
+    , Option
     , HttpException (..)
     , renderUrl
+    , queryParamToList
     )
 import Data.Aeson
     ( Value
@@ -181,9 +180,7 @@ cachedGetB datadir url params =
         (url, params)
 
 renderParams :: Option scheme -> ByteString
-renderParams (Option f _) = renderQuery True (queryTextToQuery params)
-    where
-        params = fst $ appEndo f ([], defaultRequest)
+renderParams params = renderQuery True $ queryTextToQuery $ queryParamToList params
 
 hash :: ByteString -> String
 hash = BS.unpack . BSURL.encode . MD5.hash
@@ -280,7 +277,7 @@ renderPostBody = ((=<<) :: (PostPart -> String) -> [ PostPart ] ->  String) rend
         renderPart :: PostPart -> String
         renderPart (SimpleText s) = s
         renderPart (PostedUrl s) = s
-        renderPart Skip = ""
+        renderPart Skip = "\n"
         renderPart (Quote s) = s
         renderPart (GreenText ps)     = ps >>= renderPart
         renderPart (OrangeText ps)    = ps >>= renderPart
@@ -472,7 +469,7 @@ main = do
 
     -- mapM_ print orderedPosts
 
-    mainPostLoop datadir2 (take 1 orderedPosts)
+    mainPostLoop datadir2 orderedPosts
 
     putStrLn "Done"
 

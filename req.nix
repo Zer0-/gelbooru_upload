@@ -13,7 +13,7 @@ let
       }:
       mkDerivation {
         pname = "req";
-        version = "3.5.0";
+        version = "3.12.0";
         src = ../req;
         enableSeparateDataOutput = true;
         libraryHaskellDepends = [
