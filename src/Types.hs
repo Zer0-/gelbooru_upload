@@ -31,9 +31,12 @@ data Post = Post
     , subject :: Maybe String
     , email :: Maybe String
     , name :: String
-    , postNumber :: Int
+    , postId :: Int
     , postBody :: [ PostPart ]
     , timestamp :: UTCTime
+    , websiteName :: String
+    , boardName :: String
+    , threadId :: Int
     } deriving Show
 
 type PostId = (String, Int) -- String is the board name

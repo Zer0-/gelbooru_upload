@@ -43,6 +43,7 @@ import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 
 import Types (Attachment (..), PostPart (..), Post (..))
 
+
 flatten :: [ Maybe a ] -> [ a ]
 flatten = (=<<) (maybe [] (: []))
 
@@ -119,15 +120,19 @@ parseOP =
         postParts <- withDefault getBody [] -< l
         attachmentUrls <- withDefault (listA getAttachments) [] -< l
         timeField <- css ".post.op time" >>> getAttrValue "datetime" -< l
+        let postId_ = read postNumberField
 
         returnA -< Post
             { attachments = map (\(f, (u, t)) -> Attachment f u t) attachmentUrls
             , subject = opSubjectField
             , email = emailField
             , name = nameField
-            , postNumber = read postNumberField
+            , postId = postId_
             , postBody = postParts
             , timestamp = parseTime timeField
+            , websiteName = undefined
+            , boardName = undefined
+            , threadId = postId_
             }
 
     where
@@ -166,9 +171,12 @@ parsePost =
             , subject = subjectField
             , email = emailField
             , name = nameField
-            , postNumber = read postNumberField
+            , postId = read postNumberField
             , postBody = postParts
             , timestamp = parseTime timeField
+            , websiteName = undefined
+            , boardName = undefined
+            , threadId = undefined
             }
 
     where

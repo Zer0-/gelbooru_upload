@@ -110,6 +110,9 @@ leftychan_port :: Option scheme
 --leftychan_port = port 8081
 leftychan_port = mempty
 
+website :: String
+website = "leftychan.net"
+
 leftychan_root :: Url 'Https
 leftychan_root = https "leftychan.net"
 
@@ -249,8 +252,24 @@ fetchPostsFromLeftychanCatalogPage datadir url params = do
             putStrLn ""
             return threadPaths
 
-fetchLeftychanchanPostsInThread :: Maybe String -> Url a -> Option a -> IO (Maybe [ Post ])
-fetchLeftychanchanPostsInThread datadir url params = do
+
+copyThreadInfo :: String -> Post -> Post -> Post
+copyThreadInfo board a b =
+    b
+        { websiteName = website
+        , boardName = board
+        , threadId = threadId a
+        }
+
+
+fixThreadIds :: String -> [ Post ] -> [ Post ]
+fixThreadIds _ [] = []
+fixThreadIds board (op : []) = (copyThreadInfo board op op) : []
+fixThreadIds board (op : x : xs) = (copyThreadInfo board op op) : (fixThreadIds board $ (copyThreadInfo board op x) : xs)
+
+
+fetchLeftychanchanPostsInThread :: Maybe String -> String -> Url a -> Option a -> IO (Maybe [ Post ])
+fetchLeftychanchanPostsInThread datadir board url params = do
     e <- fetchAndProcessPageData datadir process url params
 
     case e of
@@ -269,7 +288,7 @@ fetchLeftychanchanPostsInThread datadir url params = do
             postss <- postsInThread rawdoc
             mapM_ print postss
             putStrLn ""
-            return postss
+            return $ fixThreadIds board postss
 
 renderPostBody :: [ PostPart ] -> String
 renderPostBody = ((=<<) :: (PostPart -> String) -> [ PostPart ] ->  String) renderPart
@@ -363,6 +382,9 @@ postToSpamNoticer datadir (post, attachments) = do
             [ "time_stamp" .= (utcTimeToSeconds $ timestamp post)
             , "body" .= (renderPostBody $ postBody post)
             , "attachments" .= attachment_objs
+            , "website_name" .= websiteName post
+            , "board_name" .= boardName post
+            , "thread_id" .= threadId post
             ]
 
     putStrLn "PAYLOAD:"
@@ -456,7 +478,7 @@ main = do
         Just threadPaths ->
             mapM
                 ( \u ->
-                    ((flip (fetchLeftychanchanPostsInThread (Just datadir))) leftychan_port) $
+                    ((flip (fetchLeftychanchanPostsInThread (Just datadir) boardname)) leftychan_port) $
                         mkUrl leftychan_root u
                 )
                 (map (Text.pack . (drop 1)) $ reverse threadPaths)

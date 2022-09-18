@@ -117,23 +117,23 @@ postsDeps boardname posts = posts >>= procThread
         procThread :: [ Post ] -> [ PostWithDeps ]
         procThread [] = []
         procThread (x:xs) =
-            let postId = (boardname, postNumber x)
+            let postId_ = (boardname, postId x)
             in
                 -- this first post is the OP. it's id is the threadId
                 -- The op only has dependencies we can gather from it's body,
                 -- the rest of the posts have an implicit dependency on the
                 -- post above theirs, even if they don't quote anything
-                (x, postId, getFilteredDeps x)
-                : procThread1 postId postId xs
+                (x, postId_, getFilteredDeps x)
+                : procThread1 postId_ postId_ xs
 
         procThread1 :: PostId -> PostId -> [ Post ] -> [ PostWithDeps ]
         procThread1 _ _ [] = []
-        procThread1 threadId prevPost (x:xs) =
-            (x, threadId, prevPost : getFilteredDeps x)
-            : procThread1 threadId (boardname, postNumber x) xs
+        procThread1 threadId_ prevPost (x:xs) =
+            (x, threadId_, prevPost : getFilteredDeps x)
+            : procThread1 threadId_ (boardname, postId x) xs
 
         getFilteredDeps :: Post -> [ PostId ]
-        getFilteredDeps p = filter (\(_, i) -> i < postNumber p) $
+        getFilteredDeps p = filter (\(_, i) -> i < postId p) $
             postDependencies boardname p
 
 
@@ -142,7 +142,7 @@ indexPosts = fromList . (map createPair)
     where
         createPair :: PostWithDeps -> (PostId, PostWithDeps)
         createPair (p, (boardname, threadid), deps) =
-            ((boardname, postNumber p), (p, (boardname, threadid), deps))
+            ((boardname, postId p), (p, (boardname, threadid), deps))
 
 orderDeps :: Map PostId PostWithDeps -> [ PostWithDeps ]
 orderDeps postsMap = snd $ foldl' foldfn (Set.empty, []) (toList postsMap)
