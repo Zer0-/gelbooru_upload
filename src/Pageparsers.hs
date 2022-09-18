@@ -130,8 +130,8 @@ parseOP =
             , postId = postId_
             , postBody = postParts
             , timestamp = parseTime timeField
-            , websiteName = undefined
-            , boardName = undefined
+            , websiteName = ""
+            , boardName = ""
             , threadId = postId_
             }
 
@@ -174,9 +174,9 @@ parsePost =
             , postId = read postNumberField
             , postBody = postParts
             , timestamp = parseTime timeField
-            , websiteName = undefined
-            , boardName = undefined
-            , threadId = undefined
+            , websiteName = ""
+            , boardName = ""
+            , threadId = -1
             }
 
     where

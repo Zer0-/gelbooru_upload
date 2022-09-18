@@ -385,6 +385,7 @@ postToSpamNoticer datadir (post, attachments) = do
             , "website_name" .= websiteName post
             , "board_name" .= boardName post
             , "thread_id" .= threadId post
+            , "post_id" .= postId post
             ]
 
     putStrLn "PAYLOAD:"
